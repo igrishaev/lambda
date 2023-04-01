@@ -17,3 +17,4 @@ reports
 *.zip
 *.build_artifacts.txt
 lambda-demo
+bootstrap

@@ -16,10 +16,9 @@ NI_ARGS = \
 	--enable-http \
 	--enable-https \
 	-H:+PrintClassInitialization \
-	# -H:ReflectionConfigurationFiles=reflection-config.json \
 	-H:+ReportExceptionStackTraces \
 	-H:Log=registerResource \
-	-H:Name=./builds/lambda-demo-
+	-H:Name=bootstrap
 
 
 platform-docker:
@@ -27,7 +26,12 @@ platform-docker:
 
 
 build-binary-docker: ${JAR} platform-docker
-	docker run -it --rm -v ${PWD}:/build -w /build ${NI_TAG} ${NI_ARGS}$(shell cat ${PLATFORM})
+	docker run -it --rm -v ${PWD}:/build -w /build ${NI_TAG} ${NI_ARGS}
+
 
 uberjar:
 	lein uberjar
+
+.phony: bootstrap
+bootstrap: uberjar build-binary-docker
+	zip -j bootstrap.zip bootstrap
