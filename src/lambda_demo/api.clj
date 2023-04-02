@@ -4,6 +4,7 @@
   (:require
    [lambda-demo.log :as log]
    [lambda-demo.error :refer [error!]]
+   [clojure.string :as str]
    [clojure.java.io :as io]
    [cheshire.core :as json]
    [org.httpkit.client :as client]))
@@ -30,7 +31,8 @@
          (format "http://%s/2018-06-01" host path)
 
          params
-         {:method method
+         {:as :stream
+          :method method
           :body (when data
                   (json/generate-string data))}
 
@@ -42,21 +44,9 @@
        (200 201 202)
        response
 
-       (400 403)
-       (error! "Got 4xx response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
-               method url status body)
-
-       (500)
-       (do
-         (log/errorf "Got 5xx response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
-                     method url status body)
-         (System/exit 1))
-
        ;; else
-       (do
-         (log/errorf "Got unknown response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
-                     method url status body)
-         (System/exit 1))))))
+       (error! "Got negative response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
+               method url status body)))))
 
 
 (defn next-invocation []
@@ -69,10 +59,26 @@
     (api-call :post path data)))
 
 
-(defn e->err-payload [e]
-  {:errorMessage "bb"
-   :errorType "aa"
-   :stackTrace ["a" "b" "c"]})
+(defn e->payload [e]
+
+  (let [{:keys [via
+                trace]}
+        (Throwable->map e)
+
+        stackTrace
+        (for [el trace]
+          (str/join \space el))
+
+
+        errorType
+        (-> via first :type)
+
+        errorMessage
+        (-> via first :message)]
+
+    {:errorMessage errorMessage
+     :errorType errorType
+     :stackTrace stackTrace}))
 
 
 (defn init-error
@@ -91,7 +97,7 @@
          "/runtime/init/error"
 
          data
-         (e->err-payload e)]
+         (e->payload e)]
 
      (api-call :post path data))))
 
@@ -112,6 +118,6 @@
          (format "/runtime/invocation/request-id/error" request-id)
 
          data
-         (e->err-payload e)]
+         (e->payload e)]
 
      (api-call :post path data))))

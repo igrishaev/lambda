@@ -1,6 +1,7 @@
 (ns lambda-demo.ring
   (:require
    [lambda-demo.codec :as codec]
+   [lambda-demo.error :refer [error!]]
    [clojure.java.io :as io]
    [clojure.string :as str]))
 
@@ -60,7 +61,7 @@
 
   Object
   (->body [this]
-    (throw (new Exception "AAAAAAA")))
+    (error! "Cannot coerce %s to response body" this))
 
   String
   (->body [this]

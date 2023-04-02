@@ -2,39 +2,41 @@
   (:require
    [lambda-demo.codec :as codec]
    [lambda-demo.api :as api]
-   [cheshire.core :as json]
-   [clojure.java.io :as io]
-   [clojure.string :as str]
-   [org.httpkit.client :as client])
-  (:gen-class))
+   [lambda-demo.error :as e]
+   [lambda-demo.log :as log]))
 
 
+(defn run
 
-#_
-(defn make-handler []
-  (let [config {:foo 1}]
-    (fn [event]
-      (process-event config event))))
+  ([fn-event]
+   (run nil fn-event))
 
+  ([fn-init fn-event]
 
-(defn run-loop
+   (let [[e init]
+         (e/with-safe
+           (when fn-init
+             (fn-init)))]
 
-  [fn-event]
+     (when e
+       (api/init-error e)
+       (log/errorf "Init error: %s" e)
+       (e/exit! 1))
 
-  (while true
+     (while true
 
-    (let [{:keys [status headers body]}
-          (api/next-invocation)
+       (let [{:keys [status headers body]}
+             (api/next-invocation)
 
-          request-id
-          (get headers :lambda-runtime-aws-request-id)
+             request-id
+             (get headers :lambda-runtime-aws-request-id)
 
-          [e response]
-          (try
-            [nil (fn-event body)]
-            (catch Throwable e
-              [e nil]))]
+             [e response]
+             (e/with-safe
+               (if fn-event
+                 [nil (fn-event init body)]
+                 [nil (fn-event body)]))]
 
-      (if e
-        (api/invocation-error request-id e)
-        (api/invocation-response request-id response)))))
+         (if e
+           (api/invocation-error request-id e)
+           (api/invocation-response request-id response)))))))
