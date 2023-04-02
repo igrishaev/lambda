@@ -1,6 +1,4 @@
 (ns lambda-demo.ring
-  (:import
-   java.io.ByteArrayInputStream)
   (:require
    [lambda-demo.codec :as codec]
    [clojure.java.io :as io]
@@ -56,6 +54,7 @@
 
 (defprotocol IBody
   (->body [this]))
+
 
 (extend-protocol IBody
 
