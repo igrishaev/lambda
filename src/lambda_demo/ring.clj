@@ -1,3 +1,5 @@
+;; https://github.com/ring-clojure/ring/blob/master/SPEC
+
 (ns lambda-demo.ring
   (:require
    [lambda-demo.log :as log]
@@ -53,6 +55,9 @@
         request-method
         (some-> method str/lower-case keyword)
 
+        norm-headers
+        (process-headers headers)
+
         request
         {:remote-addr sourceIp
          :uri path
@@ -61,7 +66,7 @@
          :request-method request-method
          :protocol protocol
          :user-agent userAgent
-         :headers (process-headers headers)
+         :headers norm-headers
          :body stream}]
 
     (with-meta request {:event event})))
