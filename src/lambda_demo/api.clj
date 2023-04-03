@@ -4,6 +4,7 @@
   (:require
    [lambda-demo.log :as log]
    [lambda-demo.error :refer [error!]]
+   [lambda-demo.env :as env]
    [clojure.string :as str]
    [clojure.java.io :as io]
    [cheshire.core :as json]
@@ -25,19 +26,20 @@
   ([method path data]
 
    (let [host
-         (System/getenv "AWS_LAMBDA_RUNTIME_API")
+         (env/env! "AWS_LAMBDA_RUNTIME_API")
 
          url
-         (format "http://%s/2018-06-01" host path)
+         (format "http://%s/2018-06-01%s" host path)
 
          params
          {:as :stream
+          :url url
           :method method
           :body (when data
                   (json/generate-string data))}
 
          {:as response :keys [status body]}
-         @(client/request url params parse-response)]
+         @(client/request params parse-response)]
 
      (case (long status)
 
@@ -53,9 +55,9 @@
   (api-call :get "/runtime/invocation/next"))
 
 
-(defn invocation-response [^String aws-request-id data]
+(defn invocation-response [^String request-id data]
   (let [path
-        (format "/runtime/invocation/%s/response" aws-request-id)]
+        (format "/runtime/invocation/%s/response" request-id)]
     (api-call :post path data)))
 
 
@@ -115,7 +117,7 @@
    ;; Runtime.ConfigInvalid
    ;; Runtime.UnknownReason
    (let [path
-         (format "/runtime/invocation/request-id/error" request-id)
+         (format "/runtime/invocation/%s/error" request-id)
 
          data
          (e->payload e)]

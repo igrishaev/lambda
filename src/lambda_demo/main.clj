@@ -33,9 +33,9 @@
 
              [e response]
              (e/with-safe
-               (if fn-event
-                 [nil (fn-event init body)]
-                 [nil (fn-event body)]))]
+               (if fn-init
+                 (fn-event init body)
+                 (fn-event body)))]
 
          (if e
            (api/invocation-error request-id e)
