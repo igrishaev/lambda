@@ -1,7 +1,7 @@
 
 NI_TAG = ghcr.io/graalvm/native-image:22.2.0
 
-JAR = target/uberjar/lambda-demo.jar
+JAR = target/uberjar/demo1.jar
 
 PWD = $(shell pwd)
 
@@ -30,7 +30,7 @@ build-binary-docker: ${JAR} platform-docker
 
 
 uberjar:
-	lein uberjar
+	lein with-profile +demo1 uberjar
 
 .phony: bootstrap
 bootstrap: uberjar build-binary-docker

@@ -1,10 +1,10 @@
 (defproject com.github.igrishaev/lambda "0.1.0-SNAPSHOT"
 
   :description
-  "FIXME: write description"
+  "AWS Lambda as a single binary file"
 
   :url
-  "http://example.com/FIXME"
+  "https://github.com/igrishaev/lambda"
 
   :license
   {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -15,17 +15,24 @@
    [http-kit "2.6.0"]
    [cheshire "5.10.0"]]
 
-  :main
-  ^:skip-aot lambda.core
-
-  :target-path
-  "target/uberjar"
-
-  :uberjar-name
-  "lambda.jar"
+  :target-path "target/uberjar"
 
   :profiles
-  {:dev
+  {:demo1
+
+   {:main demo1.main
+
+    :dependencies
+    [[ring/ring-core "1.9.6"]
+     [ring/ring-json "0.5.1"]]
+
+    :source-paths
+    ["env/demo1/src"]
+
+    :uberjar-name
+    "demo1.jar"}
+
+   :dev
    {:dependencies
     [[ring/ring-core "1.9.6"]
      [ring/ring-json "0.5.1"]]

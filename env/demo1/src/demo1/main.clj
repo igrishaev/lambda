@@ -1,8 +1,18 @@
-(ns lambda.core
+(ns demo1.main
   (:require
    [lambda.ring :as ring]
    [lambda.main :as main]
-   [lambda.log :as log])
+
+   [ring.middleware.json
+    :refer [wrap-json-body
+            wrap-json-response]]
+
+   [ring.middleware.keyword-params
+    :refer [wrap-keyword-params]]
+
+   [ring.middleware.params
+    :refer [wrap-params]])
+
   (:gen-class))
 
 
@@ -20,10 +30,10 @@
 
 (def fn-event
   (-> handler
-      ;; (wrap-keyword-params)
-      ;; (wrap-params)
-      ;; (wrap-json-body {:keywords? true})
-      ;; (wrap-json-response)
+      (wrap-keyword-params)
+      (wrap-params)
+      (wrap-json-body {:keywords? true})
+      (wrap-json-response)
       (ring/wrap-ring-event)))
 
 
