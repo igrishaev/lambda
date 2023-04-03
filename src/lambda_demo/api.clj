@@ -2,8 +2,7 @@
 
 (ns lambda-demo.api
   (:require
-   [lambda-demo.log :as log]
-   [lambda-demo.error :refer [error!]]
+   [lambda-demo.error :as e]
    [lambda-demo.env :as env]
    [clojure.string :as str]
    [clojure.java.io :as io]
@@ -51,8 +50,8 @@
        response
 
        ;; else
-       (error! "Got negative response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
-               method url status body)))))
+       (e/error! "Got negative response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
+                 method url status body)))))
 
 
 (defn next-invocation []

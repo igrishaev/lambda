@@ -7,41 +7,25 @@
 
 
 (defn handler [request]
+
   (let [{:keys [request-method
                 uri
                 headers
                 body]}
         request]
+
     {:status 200
-     :headers {"content-type" "text/plain"}
-     :body (str request-method
-                \space
-                uri
-                \space
-                headers
-                \space
-                body)}))
-
-
-#_
-(defn fn-init []
-  {:foo 1
-   :bar 2
-   :kek 3})
-
-
-#_
-(defn fn-event
-  [init event]
-  {:statusCode 200
-   :headers {:Content-Type "text/plain"}
-   :body "it works!"})
+     :body {:aaa 1}}))
 
 
 (def fn-event
   (-> handler
-      ring/wrap-ring-event))
+      ;; (wrap-keyword-params)
+      ;; (wrap-params)
+      ;; (wrap-json-body {:keywords? true})
+      ;; (wrap-json-response)
+      (ring/wrap-ring-event)))
 
 
 (defn -main [& _]
-  (main/run #_fn-init fn-event))
+  (main/run fn-event))

@@ -4,8 +4,10 @@
 
 
 (defmacro logf [level template & args]
-  `(println (-> ~level name str/upper-case)
-            (format ~template ~@args)))
+  (let [nsn (ns-name *ns*)]
+    `(println '~nsn
+              (-> ~level name str/upper-case)
+              (format ~template ~@args))))
 
 
 (defmacro debugf [template & args]

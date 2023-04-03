@@ -1,3 +1,2 @@
 
 - validate ring fields in event
-- init func for ring?

@@ -4,43 +4,28 @@
 
 (ns lambda-demo.main
   (:require
-   [lambda-demo.codec :as codec]
+   [lambda-demo.log :as log]
    [lambda-demo.api :as api]
-   [lambda-demo.error :as e]
-   [lambda-demo.log :as log]))
+   [lambda-demo.error :as e]))
 
 
-(defn run
+(defn run [fn-event]
 
-  ([fn-event]
-   (run nil fn-event))
+  (while true
 
-  ([fn-init fn-event]
+    (let [{:keys [status headers body]}
+          (api/next-invocation)
 
-   (let [[e init]
-         (e/with-safe
-           (when fn-init
-             (fn-init)))]
+          request-id
+          (get headers :lambda-runtime-aws-request-id)
 
-     (when e
-       (api/init-error e)
-       (log/errorf "Init error: %s" e)
-       (e/exit! 1))
+          [e response]
+          (e/with-safe
+            (fn-event body))]
 
-     (while true
-
-       (let [{:keys [status headers body]}
-             (api/next-invocation)
-
-             request-id
-             (get headers :lambda-runtime-aws-request-id)
-
-             [e response]
-             (e/with-safe
-               (if fn-init
-                 (fn-event init body)
-                 (fn-event body)))]
-
-         (if e
-           (api/invocation-error request-id e)
-           (api/invocation-response request-id response)))))))
+      (if e
+        (do
+          (log/errorf "Event error, request ID: %s, exception: %s"
+                      request-id e)
+          (api/invocation-error request-id e))
+        (api/invocation-response request-id response)))))

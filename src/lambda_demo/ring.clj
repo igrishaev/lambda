@@ -1,15 +1,24 @@
 (ns lambda-demo.ring
   (:require
+   [lambda-demo.log :as log]
    [lambda-demo.codec :as codec]
    [lambda-demo.error :refer [error!]]
    [clojure.java.io :as io]
    [clojure.string :as str]))
 
 
+(defn process-headers
+  [headers]
+  (update-keys headers
+               (fn [header]
+                 (-> header name str/lower-case))))
+
+
 (defn ->ring [event]
 
   (let [{:keys [headers
                 isBase64Encoded
+                rawQueryString
                 queryStringParameters
                 requestContext
                 body]}
@@ -43,11 +52,12 @@
         request
         {:remote-addr sourceIp
          :uri path
-         :query-string queryStringParameters
+         :query-params queryStringParameters
+         :query-string rawQueryString
          :request-method request-method
          :protocol protocol
          :user-agent userAgent
-         :headers headers
+         :headers (process-headers headers)
          :body stream}]
 
     (with-meta request {:event event})))
@@ -106,6 +116,7 @@
 
 (defn wrap-ring-event [handler]
   (fn [event]
+    (log/infof "event: %s" event)
     (-> event
         (->ring)
         (handler)

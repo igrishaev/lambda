@@ -15,13 +15,22 @@
    [http-kit "2.6.0"]
    [cheshire "5.10.0"]]
 
-  :main ^:skip-aot lambda-demo.core
+  :main
+  ^:skip-aot lambda-demo.core
 
-  :target-path "target/uberjar"
+  :target-path
+  "target/uberjar"
 
-  :uberjar-name "lambda-demo.jar"
+  :uberjar-name
+  "lambda-demo.jar"
 
   :profiles
-  {:uberjar
+  {:dev
+   {:dependencies
+    [[ring/ring-core "1.9.6"]
+     [ring/ring-json "0.5.1"]]
+    :resource-paths ["env/dev/resources"]}
+
+   :uberjar
    {:aot :all
     :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
