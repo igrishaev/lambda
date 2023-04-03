@@ -24,6 +24,9 @@
    (api-call method path nil))
 
   ([method path data]
+   (api-call method path data nil))
+
+  ([method path data headers]
 
    (let [host
          (env/env! "AWS_LAMBDA_RUNTIME_API")
@@ -34,6 +37,7 @@
          params
          {:as :stream
           :url url
+          :headers headers
           :method method
           :body (when data
                   (json/generate-string data))}
@@ -71,7 +75,6 @@
         (for [el trace]
           (str/join \space el))
 
-
         errorType
         (-> via first :type)
 
@@ -83,25 +86,27 @@
      :stackTrace stackTrace}))
 
 
+(defn add-error-type [headers ^String error-type]
+  (cond-> headers
+    error-type
+    (assoc "Lambda-Runtime-Function-Error-Type" error-type)))
+
+
 (defn init-error
   ([e]
    (init-error e nil))
 
   ([^Throwable e ^String error-type]
-
-   ;; TODO: error-type header
-   ;; Lambda-Runtime-Function-Error-Type
-   ;; Runtime.NoSuchHandler
-   ;; Runtime.APIKeyNotFound
-   ;; Runtime.ConfigInvalid
-   ;; Runtime.UnknownReason
    (let [path
          "/runtime/init/error"
 
          data
-         (e->payload e)]
+         (e->payload e)
 
-     (api-call :post path data))))
+         headers
+         (add-error-type nil error-type)]
+
+     (api-call :post path data headers))))
 
 
 (defn invocation-error
@@ -109,17 +114,13 @@
    (invocation-error request-id e nil))
 
   ([^String request-id ^Throwable e ^String error-type]
-
-   ;; TODO: error-type header
-   ;; Lambda-Runtime-Function-Error-Type
-   ;; Runtime.NoSuchHandler
-   ;; Runtime.APIKeyNotFound
-   ;; Runtime.ConfigInvalid
-   ;; Runtime.UnknownReason
    (let [path
          (format "/runtime/invocation/%s/error" request-id)
 
          data
-         (e->payload e)]
+         (e->payload e)
 
-     (api-call :post path data))))
+         headers
+         (add-error-type nil error-type)]
+
+     (api-call :post path data headers))))

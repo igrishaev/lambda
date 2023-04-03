@@ -1,3 +1,7 @@
+;; https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
+;; https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html
+;; https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html
+
 (ns lambda-demo.main
   (:require
    [lambda-demo.codec :as codec]
