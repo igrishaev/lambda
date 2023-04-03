@@ -104,8 +104,9 @@
      :body string}))
 
 
-(defn ->event-handler [ring-handler]
+(defn wrap-ring-event [handler]
   (fn [event]
-    (let [ring-req (->ring event)
-          ring-res (ring-handler ring-req)]
-      (ring-> ring-res))))
+    (-> event
+        (->ring)
+        (handler)
+        (ring->))))

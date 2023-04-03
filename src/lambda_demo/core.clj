@@ -6,7 +6,7 @@
   (:gen-class))
 
 
-(defn ring-handler [request]
+(defn handler [request]
   (let [{:keys [request-method
                 uri
                 headers
@@ -39,7 +39,8 @@
 
 
 (def fn-event
-  (ring/->event-handler ring-handler))
+  (-> handler
+      ring/wrap-ring-event))
 
 
 (defn -main [& _]
