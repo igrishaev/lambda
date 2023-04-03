@@ -1,8 +1,8 @@
-(ns lambda-demo.core
+(ns lambda.core
   (:require
-   [lambda-demo.ring :as ring]
-   [lambda-demo.main :as main]
-   [lambda-demo.log :as log])
+   [lambda.ring :as ring]
+   [lambda.main :as main]
+   [lambda.log :as log])
   (:gen-class))
 
 

@@ -1,4 +1,4 @@
-(ns lambda-demo.codec
+(ns lambda.codec
   (:import
    java.util.Base64))
 

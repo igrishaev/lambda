@@ -1,6 +1,6 @@
-(ns lambda-demo.env
+(ns lambda.env
   (:require
-   [lambda-demo.error :refer [error!]]))
+   [lambda.error :refer [error!]]))
 
 
 (defn env! [^String env-name]

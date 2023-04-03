@@ -1,10 +1,10 @@
 ;; https://github.com/ring-clojure/ring/blob/master/SPEC
 
-(ns lambda-demo.ring
+(ns lambda.ring
   (:require
-   [lambda-demo.log :as log]
-   [lambda-demo.codec :as codec]
-   [lambda-demo.error :refer [error!]]
+   [lambda.log :as log]
+   [lambda.codec :as codec]
+   [lambda.error :refer [error!]]
    [clojure.java.io :as io]
    [clojure.string :as str]))
 
@@ -125,7 +125,6 @@
 
 (defn wrap-ring-event [handler]
   (fn [event]
-    (log/infof "event: %s" event)
     (-> event
         (->ring)
         (handler)

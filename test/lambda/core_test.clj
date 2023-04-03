@@ -1,6 +1,6 @@
-(ns lambda-demo.core-test
+(ns lambda.core-test
   (:require
-   [lambda-demo.ring :as ring]
+   [lambda.ring :as ring]
 
    [ring.middleware.json
     :refer [wrap-json-body

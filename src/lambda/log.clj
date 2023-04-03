@@ -1,4 +1,4 @@
-(ns lambda-demo.log
+(ns lambda.log
   (:require
    [clojure.string :as str]))
 

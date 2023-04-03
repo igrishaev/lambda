@@ -1,4 +1,4 @@
-(ns lambda-demo.error)
+(ns lambda.error)
 
 
 (defmacro error! [template & args]

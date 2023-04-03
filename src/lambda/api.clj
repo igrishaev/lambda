@@ -1,9 +1,9 @@
 ;; https://docs.aws.amazon.com/lambda/latest/dg/runtimes-api.html
 
-(ns lambda-demo.api
+(ns lambda.api
   (:require
-   [lambda-demo.error :as e]
-   [lambda-demo.env :as env]
+   [lambda.error :as e]
+   [lambda.env :as env]
    [clojure.string :as str]
    [clojure.java.io :as io]
    [cheshire.core :as json]

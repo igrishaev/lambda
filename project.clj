@@ -1,4 +1,4 @@
-(defproject lambda-demo "0.1.0-SNAPSHOT"
+(defproject com.github.igrishaev/lambda "0.1.0-SNAPSHOT"
 
   :description
   "FIXME: write description"
@@ -16,13 +16,13 @@
    [cheshire "5.10.0"]]
 
   :main
-  ^:skip-aot lambda-demo.core
+  ^:skip-aot lambda.core
 
   :target-path
   "target/uberjar"
 
   :uberjar-name
-  "lambda-demo.jar"
+  "lambda.jar"
 
   :profiles
   {:dev

@@ -2,11 +2,11 @@
 ;; https://docs.aws.amazon.com/lambda/latest/dg/runtimes-custom.html
 ;; https://docs.aws.amazon.com/lambda/latest/dg/urls-invocation.html
 
-(ns lambda-demo.main
+(ns lambda.main
   (:require
-   [lambda-demo.log :as log]
-   [lambda-demo.api :as api]
-   [lambda-demo.error :as e]))
+   [lambda.log :as log]
+   [lambda.api :as api]
+   [lambda.error :as e]))
 
 
 (defn run [fn-event]
