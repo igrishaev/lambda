@@ -12,7 +12,6 @@
    [ring.middleware.params
     :refer [wrap-params]]
 
-
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.test :refer [deftest is]]))
@@ -87,7 +86,41 @@
             :query-params {:parameter1 "value1,value2", :parameter2 "value"},
             :uri "/my/path",
             :query-string "parameter1=value1&parameter1=value2&parameter2=value",
-            :body {:foo 123},
+            :body {:foo 123}
             :request-method :post}
 
            request))))
+
+
+(deftest test-form-params
+
+  (let [event
+        (-> "event.json"
+            io/resource
+            io/reader
+            (json/parse-stream keyword)
+            (assoc-in [:headers "Content-Type"]
+                      "application/x-www-form-urlencoded")
+            (assoc-in [:body]
+                      "test=foo&hello=bar"))
+
+        response
+        (fn-event event)
+
+        request
+        @capture!]
+
+    (is (= {:user-agent "agent",
+            :protocol "HTTP/1.1",
+            :remote-addr "123.123.123.123",
+            :params {:test "foo", :hello "bar"},
+            :headers
+            {"content-type" "application/x-www-form-urlencoded",
+             "header2" "value1,value2"},
+            :form-params {"test" "foo", "hello" "bar"},
+            :query-params {:parameter1 "value1,value2", :parameter2 "value"},
+            :uri "/my/path",
+            :query-string "parameter1=value1&parameter1=value2&parameter2=value",
+            :request-method :post}
+
+           (dissoc request :body)))))

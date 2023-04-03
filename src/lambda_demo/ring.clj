@@ -9,9 +9,13 @@
 
 (defn process-headers
   [headers]
-  (update-keys headers
-               (fn [header]
-                 (-> header name str/lower-case))))
+  (persistent!
+   (reduce-kv
+    (fn [acc! k v]
+      (let [h (-> k name str/lower-case)]
+        (assoc! acc! h v)))
+    (transient {})
+    headers)))
 
 
 (defn ->ring [event]
