@@ -1,7 +1,7 @@
 (defproject com.github.igrishaev/lambda "0.1.0-SNAPSHOT"
 
   :description
-  "AWS Lambda as a single binary file"
+  "An AWS Lambda in a single binary file"
 
   :url
   "https://github.com/igrishaev/lambda"
@@ -15,7 +15,11 @@
    [http-kit "2.6.0"]
    [cheshire "5.10.0"]]
 
-  :target-path "target/uberjar"
+  :target-path
+  "target/uberjar"
+
+  :uberjar-name
+  "bootstrap.jar"
 
   :profiles
   {:demo1
@@ -27,10 +31,7 @@
      [ring/ring-json "0.5.1"]]
 
     :source-paths
-    ["env/demo1/src"]
-
-    :uberjar-name
-    "demo1.jar"}
+    ["env/demo1/src"]}
 
    :dev
    {:dependencies

@@ -1,7 +1,7 @@
 
 NI_TAG = ghcr.io/graalvm/native-image:22.2.0
 
-JAR = target/uberjar/demo1.jar
+JAR = target/uberjar/bootstrap.jar
 
 PWD = $(shell pwd)
 
@@ -21,17 +21,24 @@ NI_ARGS = \
 	-H:Name=bootstrap
 
 
-platform-docker:
-	docker run -it --rm --entrypoint /bin/sh ${NI_TAG} -c 'echo `uname -s`-`uname -m`' > ${PLATFORM}
+graal-build:
+	native-image ${NI_ARGS}
 
 
-build-binary-docker: ${JAR} platform-docker
+build-binary-docker: ${JAR}
 	docker run -it --rm -v ${PWD}:/build -w /build ${NI_TAG} ${NI_ARGS}
+
+
+build-binary-local: ${JAR} graal-build
 
 
 uberjar:
 	lein with-profile +demo1 uberjar
 
-.phony: bootstrap
-bootstrap: uberjar build-binary-docker
+
+bootstrap-zip:
 	zip -j bootstrap.zip bootstrap
+
+bootstrap-docker: uberjar build-binary-docker bootstrap-zip
+
+bootstrap-local: uberjar build-binary-local bootstrap-zip
