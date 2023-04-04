@@ -1,5 +1,20 @@
 # lambda-demo
 
+## Installation
+
+Leiningen/Boot
+
+```
+[com.github.igrishaev/lambda "0.1.0"]
+```
+
+Clojure CLI/deps.edn
+
+```
+com.github.igrishaev/lambda {:mvn/version "0.1.0"}
+```
+
+
 ```
 make uberjar
 make build-binary-docker
