@@ -42,3 +42,8 @@ bootstrap-zip:
 bootstrap-docker: uberjar build-binary-docker bootstrap-zip
 
 bootstrap-local: uberjar build-binary-local bootstrap-zip
+
+
+lint:
+	clj-kondo --lint .
+	lein cljfmt check
