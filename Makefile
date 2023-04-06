@@ -47,3 +47,10 @@ bootstrap-local: uberjar build-binary-local bootstrap-zip
 lint:
 	clj-kondo --lint .
 	lein cljfmt check
+
+
+toc-install:
+	npm install --save markdown-toc
+
+toc-build:
+	node_modules/.bin/markdown-toc -i README.md

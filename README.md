@@ -1,4 +1,45 @@
-# lambda-demo
+# Lambda
+
+A small framework to run AWS Lambdas compiled with Native Image.
+
+## Table of Contents
+
+<!-- toc -->
+
+- [Motivation & Benefits](#motivation--benefits)
+- [Installation](#installation)
+- [Making Your First Lambda](#making-your-first-lambda)
+  * [Prepare The Code](#prepare-the-code)
+  * [Compile It](#compile-it)
+  * [Create a Lambda in AWS](#create-a-lambda-in-aws)
+  * [Deploy and Test It](#deploy-and-test-it)
+- [Ring Handler for HTTP Requests](#ring-handler-for-http-requests)
+- [Sharing the State](#sharing-the-state)
+
+<!-- tocstop -->
+
+## Motivation & Benefits
+
+[search]: https://clojars.org/search?q=lambda
+
+There is a lot of Lambda Clojure libraries so far: quick search on Clojars gives
+several screens of them. What is the point to make a new one? Well, because none
+of the existing libraries covers my requirements, namely:
+
+- I want a framework be free from any Java SDK, but pure Clojure only.
+- I want it to compile into a single binary file so no environment of any kind
+  is needed.
+- The deployment process must be extremely simple.
+
+As the result, this framework:
+
+- Depends only on Http Kit and Cheshire for interaction with AWS;
+- Provides an endless loop that consumes events from AWS and handles them. You
+  only submit a function that processes an event.
+- Provides a Ring middleware that turns HTTP events into a Ring handler. Thus,
+  you can easily serve HTTP requests with the good old Ring stack.
+- Has a built-in logging facility.
+- Provides a bunch of Make commands to build a zipped bootstrap file.
 
 ## Installation
 
@@ -14,23 +55,16 @@ Clojure CLI/deps.edn
 com.github.igrishaev/lambda {:mvn/version "0.1.0"}
 ```
 
+## Making Your First Lambda
 
-```
-make uberjar
-make build-binary-docker
+### Prepare The Code
 
-mv Linux-aarch64 lambda-demo
-chmod +x lambda-demo
-```
+### Compile It
 
+### Create a Lambda in AWS
 
+### Deploy and Test It
 
-```
-START RequestId: efbaf029-60e3-49e5-b36d-708f7b4157ba Version: $LATEST
-headers: {:content-length "49", :content-type "application/json", :date "Fri, 31 Mar 2023 15:53:51 GMT", :lambda-runtime-aws-request-id "efbaf029-60e3-49e5-b36d-708f7b4157ba", :lambda-runtime-deadline-ms "1680278034470", :lambda-runtime-invoked-function-arn "arn:aws:lambda:us-east-1:474692903177:function:asdf", :lambda-runtime-trace-id "Root=1-6427020f-759ca95f467960bb063adbeb;Parent=42ae836531ace214;Sampled=0"}
-event-data: {"key1" "value1", "key2" "value2", "key3" "value3"}
-status: 202
-body: {"status":"OK"}
-END RequestId: efbaf029-60e3-49e5-b36d-708f7b4157ba
-REPORT RequestId: efbaf029-60e3-49e5-b36d-708f7b4157ba	Duration: 1.30 ms	Billed Duration: 2 ms	Memory Size: 128 MB	Max Memory Used: 57 MB
-```
+## Ring Handler for HTTP Requests
+
+## Sharing the State

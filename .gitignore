@@ -18,3 +18,7 @@ reports
 *.build_artifacts.txt
 lambda-demo
 bootstrap
+
+node_modules
+package-lock.json
+package.json
