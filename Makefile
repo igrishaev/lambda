@@ -5,8 +5,6 @@ JAR = target/uberjar/bootstrap.jar
 
 PWD = $(shell pwd)
 
-PLATFORM = PLATFORM
-
 NI_ARGS = \
 	--initialize-at-build-time \
 	--report-unsupported-elements-at-runtime \

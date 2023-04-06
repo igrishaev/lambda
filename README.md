@@ -8,14 +8,16 @@ A small framework to run AWS Lambdas compiled with Native Image.
 
 - [Motivation & Benefits](#motivation--benefits)
 - [Installation](#installation)
-- [Making Your First Lambda](#making-your-first-lambda)
+- [Writing Your First Lambda](#writing-your-first-lambda)
   * [Prepare The Code](#prepare-the-code)
   * [Error Handling](#error-handling)
   * [Compile It](#compile-it)
+    + [On Linux (Locally)](#on-linux-locally)
+    + [On MacOS (Docker)](#on-macos-docker)
   * [Create a Lambda in AWS](#create-a-lambda-in-aws)
   * [Deploy and Test It](#deploy-and-test-it)
 - [Ring Handler for HTTP Requests](#ring-handler-for-http-requests)
-- [Sharing the State](#sharing-the-state)
+- [Sharing the State Between Events](#sharing-the-state-between-events)
 
 <!-- tocstop -->
 
@@ -55,13 +57,79 @@ Clojure CLI/deps.edn
 com.github.igrishaev/lambda {:mvn/version "0.1.0"}
 ```
 
-## Making Your First Lambda
+## Writing Your First Lambda
 
 ### Prepare The Code
+
+```clojure
+(ns demo.main
+  (:require
+   [lambda.log :as log]
+   [lambda.main :as main])
+  (:gen-class))
+
+
+(defn handler [event]
+  (log/infof "Event is: %s" event)
+  (process-event ...)
+  {:result [42]})
+
+
+(defn -main [& _]
+  (main/run handler))
+```
 
 ### Error Handling
 
 ### Compile It
+
+```make
+NI_TAG = ghcr.io/graalvm/native-image:22.2.0
+
+JAR = target/uberjar/bootstrap.jar
+
+PWD = $(shell pwd)
+
+NI_ARGS = \
+	--initialize-at-build-time \
+	--report-unsupported-elements-at-runtime \
+	--no-fallback \
+	-jar ${JAR} \
+	-J-Dfile.encoding=UTF-8 \
+	--enable-http \
+	--enable-https \
+	-H:+PrintClassInitialization \
+	-H:+ReportExceptionStackTraces \
+	-H:Log=registerResource \
+	-H:Name=bootstrap
+
+uberjar:
+	lein with-profile +demo1 uberjar
+
+bootstrap-zip:
+	zip -j bootstrap.zip bootstrap
+```
+
+#### On Linux (Locally)
+
+```make
+graal-build:
+	native-image ${NI_ARGS}
+
+build-binary-local: ${JAR} graal-build
+
+bootstrap-local: uberjar build-binary-local bootstrap-zip
+```
+
+#### On MacOS (Docker)
+
+```make
+
+build-binary-docker: ${JAR}
+	docker run -it --rm -v ${PWD}:/build -w /build ${NI_TAG} ${NI_ARGS}
+
+bootstrap-docker: uberjar build-binary-docker bootstrap-zip
+```
 
 ### Create a Lambda in AWS
 
@@ -69,4 +137,36 @@ com.github.igrishaev/lambda {:mvn/version "0.1.0"}
 
 ## Ring Handler for HTTP Requests
 
-## Sharing the State
+```clojure
+(ns demo1.main
+  (:require
+   [lambda.ring :as ring]
+   [lambda.main :as main]
+   [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+   [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+   [ring.middleware.params :refer [wrap-params]])
+  (:gen-class))
+
+(defn handler [request]
+  (let [{:keys [request-method
+                uri
+                headers
+                body]}
+        request]
+
+    {:status 200
+     :body {:some {:data [1 2 3]}}}))
+
+(def fn-event
+  (-> handler
+      (wrap-keyword-params)
+      (wrap-params)
+      (wrap-json-body {:keywords? true})
+      (wrap-json-response)
+      (ring/wrap-ring-event)))
+
+(defn -main [& _]
+  (main/run fn-event))
+```
+
+## Sharing the State Between Events
