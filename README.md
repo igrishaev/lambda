@@ -10,6 +10,7 @@ A small framework to run AWS Lambdas compiled with Native Image.
 - [Installation](#installation)
 - [Making Your First Lambda](#making-your-first-lambda)
   * [Prepare The Code](#prepare-the-code)
+  * [Error Handling](#error-handling)
   * [Compile It](#compile-it)
   * [Create a Lambda in AWS](#create-a-lambda-in-aws)
   * [Deploy and Test It](#deploy-and-test-it)
@@ -57,6 +58,8 @@ com.github.igrishaev/lambda {:mvn/version "0.1.0"}
 ## Making Your First Lambda
 
 ### Prepare The Code
+
+### Error Handling
 
 ### Compile It
 
