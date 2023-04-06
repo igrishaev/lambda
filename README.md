@@ -22,13 +22,12 @@ A small framework to run AWS Lambdas compiled with Native Image.
 
 [search]: https://clojars.org/search?q=lambda
 
-There is a lot of Lambda Clojure libraries so far: quick search on Clojars gives
-several screens of them. What is the point to make a new one? Well, because none
-of the existing libraries covers my requirements, namely:
+There are a lot of Lambda Clojure libraries so far: a [quick search][search] on
+Clojars gives several screens of them. What is the point of making a new one?
+Well, because none of the existing libraries covers my requirements, namely:
 
-- I want a framework be free from any Java SDK, but pure Clojure only.
-- I want it to compile into a single binary file so no environment of any kind
-  is needed.
+- I want a framework free from any Java SDK, but pure Clojure only.
+- I want it to compile into a single binary file so no environment is needed.
 - The deployment process must be extremely simple.
 
 As the result, this framework:
@@ -37,7 +36,7 @@ As the result, this framework:
 - Provides an endless loop that consumes events from AWS and handles them. You
   only submit a function that processes an event.
 - Provides a Ring middleware that turns HTTP events into a Ring handler. Thus,
-  you can easily serve HTTP requests with the good old Ring stack.
+  you can easily serve HTTP requests with Ring stack.
 - Has a built-in logging facility.
 - Provides a bunch of Make commands to build a zipped bootstrap file.
 
