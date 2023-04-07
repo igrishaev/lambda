@@ -8,11 +8,10 @@ A small framework to run AWS Lambdas compiled with Native Image.
 
 - [Motivation & Benefits](#motivation--benefits)
 - [Installation](#installation)
-- [Writing Your First Lambda](#writing-your-first-lambda)
+- [Writing Your Lambda](#writing-your-lambda)
   * [Prepare The Code](#prepare-the-code)
-  * [Error Handling](#error-handling)
   * [Compile It](#compile-it)
-    + [On Linux (Locally)](#on-linux-locally)
+    + [Linux (Local Build)](#linux-local-build)
     + [On MacOS (Docker)](#on-macos-docker)
   * [Create a Lambda in AWS](#create-a-lambda-in-aws)
   * [Deploy and Test It](#deploy-and-test-it)
@@ -57,31 +56,43 @@ Clojure CLI/deps.edn
 com.github.igrishaev/lambda {:mvn/version "0.1.0"}
 ```
 
-## Writing Your First Lambda
+## Writing Your Lambda
 
 ### Prepare The Code
 
+Create a core module with the following code:
+
 ```clojure
-(ns demo.main
+(ns demo.core
   (:require
    [lambda.log :as log]
    [lambda.main :as main])
   (:gen-class))
-
 
 (defn handler [event]
   (log/infof "Event is: %s" event)
   (process-event ...)
   {:result [42]})
 
-
 (defn -main [& _]
   (main/run handler))
 ```
 
-### Error Handling
+The `handler` function takes a single argument which is a parsed Lambda
+payload. The `lambda.log` namespace provides `debugf`, `infof`, and `errorf`
+macros for logging. In the `-main` function you start an endless cycle by
+calling the `run` function.
+
+On each step of this cycle, the framework fetches a new event, processes it with
+the passed handler and submits the result to AWS. Should the handler fail, it
+catches and exception and reports it as well without interrupt the cycle. Thus,
+you don't need to `try/catch` in your handler.
 
 ### Compile It
+
+Once you have the code, compile it with GraalVM and Native image. The `Makefile`
+of this repository has all the targets you need. You can borrow it with the
+slight changes. Here are the basic definitions:
 
 ```make
 NI_TAG = ghcr.io/graalvm/native-image:22.2.0
@@ -104,13 +115,30 @@ NI_ARGS = \
 	-H:Name=bootstrap
 
 uberjar:
-	lein with-profile +demo1 uberjar
+	lein <...> uberjar
 
 bootstrap-zip:
 	zip -j bootstrap.zip bootstrap
 ```
 
-#### On Linux (Locally)
+Pay attention to the following:
+
+- Ensure the jar name is set to `bootstrap.jar` in your project. This might be
+  done by setting these in your `project.clj`:
+
+```clojure
+{:target-path "target/uberjar"
+ :uberjar-name "bootstrap.jar"}
+```
+
+- The `NI_ARGS` might be extended with resources, e.g. if you want an EDN config
+file be baked into the binary file.
+
+Then you compile the project either on Linux natively or with Docker.
+
+#### Linux (Local Build)
+
+On Linux, add the following Make targets:
 
 ```make
 graal-build:
@@ -121,24 +149,50 @@ build-binary-local: ${JAR} graal-build
 bootstrap-local: uberjar build-binary-local bootstrap-zip
 ```
 
+Then run `make bootstrap-local`. You'll get a file called `bootstrap.zip` with a
+single binary file `bootstrap` inside.
+
 #### On MacOS (Docker)
 
-```make
+On MacOS, add these targets:
 
+```make
 build-binary-docker: ${JAR}
 	docker run -it --rm -v ${PWD}:/build -w /build ${NI_TAG} ${NI_ARGS}
 
 bootstrap-docker: uberjar build-binary-docker bootstrap-zip
 ```
 
+Then run `make bootstrap-docker` to get the same file but compiled in a Docker image.
+
 ### Create a Lambda in AWS
+
+Create a Lambda function in AWS. For the runtime, choose custom one called
+`provided.al2` based on Amazon Linux 2. The architecture (x86_64/arm64) should
+match the architecture of your machine. For example, as I build the project on
+Mac M1, I choose arm64.
 
 ### Deploy and Test It
 
+Upload the `bootstrap.zip` file from your machine. Being unzipped, the
+`bootstrap` file is of a size of 25 megabytes. In zip, it's about 9 megabytes so
+it can be deployed without uploading it to S3 first.
+
+Test you Lambda with the console to ensure it works.
+
 ## Ring Handler for HTTP Requests
 
+The framework can turn HTTP events into Ring maps. There is a middleware that
+transforms a your handler into a Ring handler. In the example below, pay
+attention to the `ring/wrap-ring-event` middleware on the top of the stack. It
+takes a JSON map that carries an HTTP event and transforms it into a Ring map,
+then transforms a Ring response into AWS format.
+
+Right after the `ring/wrap-ring-event` middleware, feel free to add `params`
+middleware, JSON request/response and so on.
+
 ```clojure
-(ns demo1.main
+(ns demo.core
   (:require
    [lambda.ring :as ring]
    [lambda.main :as main]
