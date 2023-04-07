@@ -85,13 +85,13 @@ calling the `run` function.
 
 On each step of this cycle, the framework fetches a new event, processes it with
 the passed handler and submits the result to AWS. Should the handler fail, it
-catches and exception and reports it as well without interrupt the cycle. Thus,
+catches an exception and reports it as well without interrupt the cycle. Thus,
 you don't need to `try/catch` in your handler.
 
 ### Compile It
 
 Once you have the code, compile it with GraalVM and Native image. The `Makefile`
-of this repository has all the targets you need. You can borrow it with slight
+of this repository has all the targets you need. You can borrow them with slight
 changes. Here are the basic definitions:
 
 ```make
@@ -132,9 +132,9 @@ Pay attention to the following:
 ```
 
 - The `NI_ARGS` might be extended with resources, e.g. if you want an EDN config
-  file be baked into the binary file.
+  file baked into the binary file.
 
-Then you compile the project either on Linux natively or with Docker.
+Then compile the project either on Linux natively or with Docker.
 
 #### Linux (Local Build)
 
@@ -162,34 +162,32 @@ build-binary-docker: ${JAR}
 bootstrap-docker: uberjar build-binary-docker bootstrap-zip
 ```
 
-Then run `make bootstrap-docker` to get the same file but compiled in a Docker
+Run `make bootstrap-docker` to get the same file but compiled in a Docker
 image.
 
 ### Create a Lambda in AWS
 
-Create a Lambda function in AWS. For the runtime, choose custom one called
-`provided.al2` based on Amazon Linux 2. The architecture (x86_64/arm64) should
-match the architecture of your machine. For example, as I build the project on
-Mac M1, I choose arm64.
+Create a Lambda function in AWS. For the runtime, choose a custom one called
+`provided.al2` which is based on Amazon Linux 2. The architecture (x86_64/arm64)
+should match the architecture of your machine. For example, as I build the
+project on Mac M1, I choose arm64.
 
 ### Deploy and Test It
 
-Upload the `bootstrap.zip` file from your machine. Being unzipped, the
-`bootstrap` file is of a size of 25 megabytes. In zip, it's about 9 megabytes so
-you can skip uploading it to S3 first.
+Upload the `bootstrap.zip` file from your machine to the lambda. With no
+compression, the `bootstrap` file takes 25 megabytes. In zip, it's about 9
+megabytes so you can skip uploading it to S3 first.
 
-Test you Lambda with the console to ensure it works.
+Test you Lambda in the console to ensure it works.
 
 ## Ring Handler for HTTP Requests
 
 The framework can turn HTTP events into Ring maps. There is a middleware that
 transforms a your handler into a Ring handler. In the example below, pay
-attention to the `ring/wrap-ring-event` middleware on the top of the stack. It
-takes a JSON map that carries an HTTP event and transforms it into a Ring map,
-then transforms a Ring response into AWS format.
-
-Right after `ring/wrap-ring-event`, feel free to add any Ring middleware for
-POST parameters, JSON, and so on.
+attention to the `ring/wrap-ring-event` middleware on top of the stack. It's
+responsible for turning an event map into Ring and back. Right after
+`ring/wrap-ring-event`, feel free to add any Ring middleware for POST
+parameters, JSON, and so on.
 
 ```clojure
 (ns demo.core
@@ -225,11 +223,11 @@ POST parameters, JSON, and so on.
 
 ## Sharing the State Between Events
 
-In AWS, a Lambda can process several events if they happen at the same
-time. Thus, it's useful to preserve the state between the handler calls. A state
-can be a config map read from a resource or an open connection to some resource.
+In AWS, a Lambda can process several events if they happen in series. Thus, it's
+useful to preserve the state between the handler calls. A state can be a config
+map read from a resource or an open connection to some resource.
 
-An easy way to keep the state is to close your handler function over some
+An easy way to share the state is to close your handler function over some
 variables. In this case, the handler is not a plain function but a function that
 returns a function:
 
@@ -264,4 +262,4 @@ holds a persistent connection to a database. Under the hood, it calls the
 `process-event` function which accepts the `db` as an argument. The connection
 stays persistent and won't be created from scratch every time you process an
 event. This, of course, applies only to a case when you have multiple events
-that are served in series.
+served in series.
