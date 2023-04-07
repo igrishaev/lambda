@@ -47,13 +47,13 @@ As the result, *this* framework:
 Leiningen/Boot
 
 ```
-[com.github.igrishaev/lambda "0.1.0"]
+[com.github.igrishaev/lambda "0.1.1"]
 ```
 
 Clojure CLI/deps.edn
 
 ```
-com.github.igrishaev/lambda {:mvn/version "0.1.0"}
+com.github.igrishaev/lambda {:mvn/version "0.1.1"}
 ```
 
 ## Writing Your Lambda
