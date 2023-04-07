@@ -32,9 +32,9 @@ Well, because none of the existing libraries covers my requirements, namely:
 - I want it to compile into a single binary file so no environment is needed.
 - The deployment process must be extremely simple.
 
-As the result, this framework:
+As the result, *this* framework:
 
-- Depends only on Http Kit and Cheshire for interaction with AWS;
+- Depends only on Http Kit and Cheshire to interact with AWS;
 - Provides an endless loop that consumes events from AWS and handles them. You
   only submit a function that processes an event.
 - Provides a Ring middleware that turns HTTP events into a Ring handler. Thus,
@@ -91,8 +91,8 @@ you don't need to `try/catch` in your handler.
 ### Compile It
 
 Once you have the code, compile it with GraalVM and Native image. The `Makefile`
-of this repository has all the targets you need. You can borrow it with the
-slight changes. Here are the basic definitions:
+of this repository has all the targets you need. You can borrow it with slight
+changes. Here are the basic definitions:
 
 ```make
 NI_TAG = ghcr.io/graalvm/native-image:22.2.0
@@ -132,7 +132,7 @@ Pay attention to the following:
 ```
 
 - The `NI_ARGS` might be extended with resources, e.g. if you want an EDN config
-file be baked into the binary file.
+  file be baked into the binary file.
 
 Then you compile the project either on Linux natively or with Docker.
 
@@ -149,8 +149,7 @@ build-binary-local: ${JAR} graal-build
 bootstrap-local: uberjar build-binary-local bootstrap-zip
 ```
 
-Then run `make bootstrap-local`. You'll get a file called `bootstrap.zip` with a
-single binary file `bootstrap` inside.
+Then run `make bootstrap-local`. You'll get a file called `bootstrap.zip` with a single binary file `bootstrap` inside.
 
 #### On MacOS (Docker)
 
@@ -163,7 +162,8 @@ build-binary-docker: ${JAR}
 bootstrap-docker: uberjar build-binary-docker bootstrap-zip
 ```
 
-Then run `make bootstrap-docker` to get the same file but compiled in a Docker image.
+Then run `make bootstrap-docker` to get the same file but compiled in a Docker
+image.
 
 ### Create a Lambda in AWS
 
@@ -176,7 +176,7 @@ Mac M1, I choose arm64.
 
 Upload the `bootstrap.zip` file from your machine. Being unzipped, the
 `bootstrap` file is of a size of 25 megabytes. In zip, it's about 9 megabytes so
-it can be deployed without uploading it to S3 first.
+you can skip uploading it to S3 first.
 
 Test you Lambda with the console to ensure it works.
 
@@ -188,8 +188,8 @@ attention to the `ring/wrap-ring-event` middleware on the top of the stack. It
 takes a JSON map that carries an HTTP event and transforms it into a Ring map,
 then transforms a Ring response into AWS format.
 
-Right after the `ring/wrap-ring-event` middleware, feel free to add `params`
-middleware, JSON request/response and so on.
+Right after `ring/wrap-ring-event`, feel free to add any Ring middleware for
+POST parameters, JSON, and so on.
 
 ```clojure
 (ns demo.core
@@ -224,3 +224,44 @@ middleware, JSON request/response and so on.
 ```
 
 ## Sharing the State Between Events
+
+In AWS, a Lambda can process several events if they happen at the same
+time. Thus, it's useful to preserve the state between the handler calls. A state
+can be a config map read from a resource or an open connection to some resource.
+
+An easy way to keep the state is to close your handler function over some
+variables. In this case, the handler is not a plain function but a function that
+returns a function:
+
+~~~clojure
+(defn process-event [db event]
+  (jdbc/with-transaction [tx db]
+    (jdbc/insert! tx ...)
+    (jdbc/delete! tx ...)))
+
+
+(defn make-handler []
+
+  (let [config
+        (-> "config.edn"
+            io/resource
+            aero/read-config)
+
+        db
+        (jdbc/get-connection (:db config))]
+
+    (fn [event]
+      (process-event db event))))
+
+
+(defn -main [& _]
+  (let [handler (make-handler)]
+    (main/run handler)))
+~~~
+
+The `make-handler` call builds a function closed over the `db` variable which
+holds a persistent connection to a database. Under the hood, it calls the
+`process-event` function which accepts the `db` as an argument. The connection
+stays persistent and won't be created from scratch every time you process an
+event. This, of course, applies only to a case when you have multiple events
+that are served in series.

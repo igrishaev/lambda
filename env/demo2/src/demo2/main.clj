@@ -5,11 +5,26 @@
   (:gen-class))
 
 
-(defn handler [event]
-  (log/infof "Event is: %s" event)
-  #_(process-event ...)
-  {:result [42]})
+(defn process-event [db event]
+  (jdbc/with-transaction [tx db]
+    (jdbc/insert! tx ...)
+    (jdbc/delete! tx ...)))
+
+
+(defn make-handler []
+
+  (let [config
+        (-> "config.edn"
+            io/resource
+            aero/read-config)
+
+        db
+        (jdbc/get-connection (:db config))]
+
+    (fn [event]
+      (process-event db event))))
 
 
 (defn -main [& _]
-  (main/run handler))
+  (let [handler (make-handler)]
+    (main/run handler)))
