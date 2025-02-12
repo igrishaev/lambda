@@ -38,6 +38,7 @@
           :url url
           :headers headers
           :method method
+          :timeout Integer/MAX_VALUE
           :body (when data
                   (json/generate-string data))}
 
