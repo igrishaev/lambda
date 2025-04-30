@@ -2,9 +2,8 @@
 
 (ns lambda.api
   (:require
-   [cheshire.core :as json]
-   [clojure.java.io :as io]
    [clojure.string :as str]
+   [jsam.core :as jsam]
    [lambda.config :as config]
    [lambda.error :as e]
    [org.httpkit.client :as client]))
@@ -13,8 +12,7 @@
   (update response
           :body
           (fn [body]
-            (when body
-              (json/parse-stream (io/reader body) keyword)))))
+            (some-> body jsam/read))))
 
 
 (defn api-call
@@ -42,7 +40,7 @@
           :method method
           :timeout #_:clj-kondo/ignore (config/timeout)
           :body (when data
-                  (json/generate-string data))}
+                  (jsam/write-string data))}
 
          {:as response :keys [status body]}
          @(client/request params parse-response)]

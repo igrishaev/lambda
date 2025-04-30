@@ -20,6 +20,11 @@ NI_ARGS = \
 	-H:Log=registerResource \
 	-H:Name=bootstrap
 
+.PHONY: clear
+clear:
+	rm -rf target
+	rm -rf reports
+
 repl:
 	lein repl
 
@@ -37,7 +42,7 @@ uberjar:
 bootstrap-zip:
 	zip -j bootstrap.zip bootstrap
 
-bootstrap-docker: uberjar build-binary-docker bootstrap-zip
+bootstrap-docker: clear uberjar build-binary-docker bootstrap-zip
 
 bootstrap-local: uberjar build-binary-local bootstrap-zip
 

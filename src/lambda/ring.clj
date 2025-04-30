@@ -2,10 +2,12 @@
 
 (ns lambda.ring
   (:require
-   [lambda.codec :as codec]
-   [lambda.error :refer [error!]]
    [clojure.java.io :as io]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [jsam.core :as jsam]
+   [lambda.codec :as codec]
+   [lambda.error :refer [error!
+                         with-safe]]))
 
 
 (defn process-headers
@@ -130,3 +132,47 @@
         (->ring)
         (handler)
         (ring->))))
+
+;; JSON middleware
+;; TODO: remove ring json
+
+(defn json-request? [request]
+  (when-let [content-type
+             (get-in request [:headers "content-type"])]
+    (re-find #"^application/(.+\+)?json" content-type)))
+
+
+(def response-json-malformed
+  {:status  400
+   :headers {"Content-Type" "text/plain"}
+   :body "Malformed JSON payload"})
+
+
+(defn wrap-json-body
+  [handler]
+  (fn [request]
+    (if (json-request? request)
+      (let [[e request-json]
+            (with-safe
+              (update request :body jsam/read))]
+        (if e
+          response-json-malformed
+          (handler request-json)))
+      (handler request))))
+
+
+;; TODO:
+(defn wrap-json-params [handler]
+  (fn []
+    )
+  )
+
+
+;; TODO: pass options
+(defn wrap-json-response
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (if (-> response :body coll?)
+        (update response :body jsam/write-string)
+        response))))

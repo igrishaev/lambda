@@ -26,14 +26,14 @@
   :managed-dependencies
   [[org.clojure/clojure "1.11.1"]
    [http-kit "2.6.0"]
-   [cheshire "5.10.0"]
+   [com.github.igrishaev/jsam "0.1.0"]
    [ring/ring-core "1.9.6"]
    [ring/ring-json "0.5.1"]]
 
   :dependencies
   [[org.clojure/clojure :scope "provided"]
    [http-kit]
-   [cheshire]]
+   [com.github.igrishaev/jsam]]
 
   :target-path
   "target/uberjar"
