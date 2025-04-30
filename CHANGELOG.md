@@ -11,7 +11,7 @@
 - ?
 - ?
 
-## 0.1.2-SNAPSHOT
+## 0.1.2
 
 - add config namespace
 - set http timeout
