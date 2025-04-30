@@ -1,14 +1,14 @@
 (defproject com.github.igrishaev/lambda "0.1.2-SNAPSHOT"
 
   :description
-  "An AWS Lambda in a single binary file"
+  "AWS Lambda as single binary file"
 
   :url
   "https://github.com/igrishaev/lambda"
 
   :license
-  {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
-   :url "https://www.eclipse.org/legal/epl-2.0/"}
+  {:name "The Unlicense"
+   :url "https://unlicense.org/"}
 
   :deploy-repositories
   {"releases" {:url "https://repo.clojars.org" :creds :gpg}}
@@ -32,7 +32,7 @@
    [ring/ring-json "0.5.1"]]
 
   :dependencies
-  [[org.clojure/clojure]
+  [[org.clojure/clojure :scope "provided"]
    [http-kit]
    [cheshire]]
 

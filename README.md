@@ -172,6 +172,15 @@ Create a Lambda function in AWS. For the runtime, choose a custom one called
 should match the architecture of your machine. For example, as I build the
 project on Mac M1, I choose arm64.
 
+### Configuration
+
+There are some options you can override with environment variables, namely:
+
+| Var                      | Default          | Comment                                       |
+|--------------------------|------------------|-----------------------------------------------|
+| `LAMBDA_RUNTIME_TIMEOUT` | 900000 (15 mins) | How long to wait when polling for a new event |
+| `LAMBDA_RUNTIME_VERSION` | 2018-06-01       | Which Runtime API version to use              |
+
 ### Deploy and Test It
 
 Upload the `bootstrap.zip` file from your machine to the lambda. With no

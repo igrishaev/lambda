@@ -25,7 +25,7 @@
         request]
 
     {:status 200
-     :body {:aaa 1}}))
+     :body {:bbb 1}}))
 
 
 (def fn-event

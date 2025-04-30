@@ -2,18 +2,12 @@
 
 (ns lambda.api
   (:require
-   [lambda.error :as e]
-   [lambda.env :as env]
-   [clojure.string :as str]
-   [clojure.java.io :as io]
    [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [lambda.config :as config]
+   [lambda.error :as e]
    [org.httpkit.client :as client]))
-
-(def ^long TIMEOUT
-  (env/env-long "LAMBDA_RUNTIME_TIMEOUT" (* 10 60 1000)))
-
-(def ^long VERSION
-  (env/env-long "LAMBDA_RUNTIME_VERSION" "2018-06-01"))
 
 (defn parse-response [response]
   (update response
@@ -33,17 +27,20 @@
   ([method path data headers]
 
    (let [host
-         (env/env! "AWS_LAMBDA_RUNTIME_API")
+         #_:clj-kondo/ignore (config/host)
 
          url
-         (format "http://%s/%s%s" host VERSION path)
+         (format "http://%s/%s%s"
+                 host
+                 #_:clj-kondo/ignore (config/version)
+                 path)
 
          params
          {:as :stream
           :url url
           :headers headers
           :method method
-          :timeout TIMEOUT
+          :timeout #_:clj-kondo/ignore (config/timeout)
           :body (when data
                   (json/generate-string data))}
 
