@@ -54,3 +54,6 @@ toc-build:
 .PHONY: test
 test:
 	lein test
+
+release: lint test
+	lein release
