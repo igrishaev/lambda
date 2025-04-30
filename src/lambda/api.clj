@@ -9,6 +9,11 @@
    [cheshire.core :as json]
    [org.httpkit.client :as client]))
 
+(def ^long TIMEOUT
+  (env/env-long "LAMBDA_RUNTIME_TIMEOUT" (* 10 60 1000)))
+
+(def ^long VERSION
+  (env/env-long "LAMBDA_RUNTIME_VERSION" "2018-06-01"))
 
 (defn parse-response [response]
   (update response
@@ -31,13 +36,14 @@
          (env/env! "AWS_LAMBDA_RUNTIME_API")
 
          url
-         (format "http://%s/2018-06-01%s" host path)
+         (format "http://%s/%s%s" host VERSION path)
 
          params
          {:as :stream
           :url url
           :headers headers
           :method method
+          :timeout TIMEOUT
           :body (when data
                   (json/generate-string data))}
 

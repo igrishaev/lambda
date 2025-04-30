@@ -1,0 +1,2 @@
+{:remove-consecutive-blank-lines? false
+ :paths ["src" "test"]}

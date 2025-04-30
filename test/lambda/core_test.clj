@@ -20,6 +20,7 @@
 (def capture! (atom nil))
 
 
+#_:clj-kondo/ignore
 (defn handler [request]
 
   (reset! capture! request)
@@ -62,6 +63,7 @@
            response))))
 
 
+#_:clj-kondo/ignore
 (deftest test-request
 
   (let [event
@@ -81,7 +83,8 @@
             :remote-addr "123.123.123.123",
             :params {},
             :headers {"content-type" "application/json",
-                      "header2" "value1,value2"},
+                      "header2" "value1,value2"
+                      "x-request-id" "id"},
             :form-params {},
             :query-params {:parameter1 "value1,value2", :parameter2 "value"},
             :uri "/my/path",
@@ -92,6 +95,7 @@
            request))))
 
 
+#_:clj-kondo/ignore
 (deftest test-form-params
 
   (let [event
@@ -116,7 +120,8 @@
             :params {:test "foo", :hello "bar"},
             :headers
             {"content-type" "application/x-www-form-urlencoded",
-             "header2" "value1,value2"},
+             "header2" "value1,value2"
+             "x-request-id" "id"},
             :form-params {"test" "foo", "hello" "bar"},
             :query-params {:parameter1 "value1,value2", :parameter2 "value"},
             :uri "/my/path",

@@ -2,7 +2,6 @@
 
 (ns lambda.ring
   (:require
-   [lambda.log :as log]
    [lambda.codec :as codec]
    [lambda.error :refer [error!]]
    [clojure.java.io :as io]
@@ -56,7 +55,9 @@
         (some-> method str/lower-case keyword)
 
         norm-headers
-        (process-headers headers)
+        (-> headers
+            (process-headers)
+            (assoc "x-request-id" requestId))
 
         request
         {:remote-addr sourceIp

@@ -24,17 +24,17 @@
    ["vcs" "commit"]
    ["vcs" "push"]]
 
-  :plugins
-  [[lein-cljfmt "0.9.2"]]
-
-  :dependencies
+  :managed-dependencies
   [[org.clojure/clojure "1.11.1"]
    [http-kit "2.6.0"]
-   [cheshire "5.10.0"]]
+   [cheshire "5.10.0"]
+   [ring/ring-core "1.9.6"]
+   [ring/ring-json "0.5.1"]]
 
-  :cljfmt
-  {:remove-consecutive-blank-lines? false
-   :paths ["src" "test"]}
+  :dependencies
+  [[org.clojure/clojure]
+   [http-kit]
+   [cheshire]]
 
   :target-path
   "target/uberjar"
@@ -48,16 +48,16 @@
    {:main demo1.main
 
     :dependencies
-    [[ring/ring-core "1.9.6"]
-     [ring/ring-json "0.5.1"]]
+    [[ring/ring-core]
+     [ring/ring-json]]
 
     :source-paths
     ["env/demo1/src"]}
 
    :dev
    {:dependencies
-    [[ring/ring-core "1.9.6"]
-     [ring/ring-json "0.5.1"]]
+    [[ring/ring-core]
+     [ring/ring-json]]
     :resource-paths ["env/dev/resources"]}
 
    :uberjar

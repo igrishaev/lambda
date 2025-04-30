@@ -13,7 +13,7 @@
 
   (while true
 
-    (let [{:keys [status headers body]}
+    (let [{:keys [headers body]}
           (api/next-invocation)
 
           request-id
