@@ -96,6 +96,18 @@
 
   (let [handler
         (ring/wrap-json-params
+         (fn [request] request)
+         {:fn-key identity})]
+    (is (= {:headers {"content-type" "application/json"}
+            :json-params {"foo" 123}
+            :params {"foo" 123}}
+           (-> {:body (->stream "{\"foo\": 123}")
+                :headers {"content-type" "application/json"}}
+               (handler)
+               (dissoc :body)))))
+
+  (let [handler
+        (ring/wrap-json-params
          (fn [request] request))]
     (is (= {:params {:lol "bar", :foo 123}
             :headers {"content-type" "application/json"}
@@ -115,5 +127,15 @@
            (handler {:body (->stream "dunno-lol")
                      :headers {"content-type" "Application/Json"}})))))
 
-;; TODO: exception
-;; TODO test JSON options
+
+(deftest test-wrap-ring-exception
+
+  (let [handler
+        (ring/wrap-ring-exception
+         (fn [_request]
+           (throw (ex-info "boom" {:aaa 1}))))]
+
+    (is (= {:status 500
+            :headers {"content-type" "text/plain"}
+            :body "Internal server error"}
+           (handler {:method :get})))))
