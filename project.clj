@@ -11,7 +11,9 @@
    :url "https://unlicense.org/"}
 
   :deploy-repositories
-  {"releases" {:url "https://repo.clojars.org" :creds :gpg}}
+  {"releases"
+   {:url "https://repo.clojars.org"
+    :creds :gpg}}
 
   :release-tasks
   [["vcs" "assert-committed"]
@@ -42,18 +44,11 @@
 
   :profiles
   {:demo1
-
    {:main demo1.main
-
-    :dependencies
-    [[ring/ring-core]]
-
-    :source-paths
-    ["env/demo1/src"]}
+    :source-paths ["env/demo1/src"]}
 
    :dev
-   {:dependencies
-    [[ring/ring-core]]
+   {:dependencies [[ring/ring-core]]
     :resource-paths ["env/dev/resources"]}
 
    :uberjar

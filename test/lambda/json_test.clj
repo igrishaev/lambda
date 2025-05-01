@@ -9,7 +9,7 @@
 
   (let [handler
         (ring/wrap-json-response
-         (fn [request]
+         (fn [_request]
            {:status 200
             :body {:foo 123}
             :headers {"hello" "test"}}))]
@@ -23,7 +23,7 @@
 
   (let [handler
         (ring/wrap-json-response
-         (fn [request]
+         (fn [_request]
            {:status 200
             :body "dunno"
             :headers {"hello" "test"}}))]

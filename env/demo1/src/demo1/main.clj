@@ -2,11 +2,7 @@
   (:gen-class)
   (:require
    [lambda.main :as main]
-   [lambda.ring :as ring]
-   [ring.middleware.keyword-params
-    :refer [wrap-keyword-params]]
-   [ring.middleware.params
-    :refer [wrap-params]]))
+   [lambda.ring :as ring]))
 
 
 (defn handler [request]
@@ -18,15 +14,14 @@
         request]
 
     {:status 200
-     :body {:bbb 1}}))
+     :body {:request request}}))
 
 
 (def fn-event
   (-> handler
-      (wrap-keyword-params)
-      (wrap-params)
-      (ring/wrap-json-body) ;; TODO params
+      (ring/wrap-json-body)
       (ring/wrap-json-response)
+      (ring/wrap-ring-exeption)
       (ring/wrap-ring-event)))
 
 

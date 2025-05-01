@@ -42,8 +42,13 @@
           :body (when data
                   (jsam/write-string data))}
 
-         {:as response :keys [status body]}
+         {:as response
+          :keys [status body error]}
          @(client/request params parse-response)]
+
+     (when error
+       (e/rethrow! error "lambda runtime error, method: %s, url: %s"
+                   method url))
 
      (case (long status)
 
@@ -51,7 +56,7 @@
        response
 
        ;; else
-       (e/error! "Got negative response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
+       (e/throw! "Negative response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
                  method url status body)))))
 
 
@@ -65,7 +70,7 @@
     (api-call :post path data)))
 
 
-(defn e->payload [e]
+(defn ex->ErrorRequest [e]
 
   (let [{:keys [via
                 trace]}
@@ -93,34 +98,30 @@
 
 
 (defn init-error
-  ([e]
-   (init-error e nil))
+  [e]
+  (let [path
+        "/runtime/init/error"
 
-  ([^Throwable e ^String error-type]
-   (let [path
-         "/runtime/init/error"
+        data
+        (ex->ErrorRequest e)
 
-         data
-         (e->payload e)
+        headers
+        {"Lambda-Runtime-Function-Error-Type"
+         "Runtime.UnknownReason"}]
 
-         headers
-         (add-error-type nil error-type)]
-
-     (api-call :post path data headers))))
+    (api-call :post path data headers)))
 
 
 (defn invocation-error
-  ([request-id e]
-   (invocation-error request-id e nil))
+  [request-id e]
+  (let [path
+        (format "/runtime/invocation/%s/error" request-id)
 
-  ([^String request-id ^Throwable e ^String error-type]
-   (let [path
-         (format "/runtime/invocation/%s/error" request-id)
+        data
+        (ex->ErrorRequest e)
 
-         data
-         (e->payload e)
+        headers
+        {"Lambda-Runtime-Function-Error-Type"
+         "Runtime.UnknownReason"}]
 
-         headers
-         (add-error-type nil error-type)]
-
-     (api-call :post path data headers))))
+    (api-call :post path data headers)))

@@ -25,7 +25,7 @@
 
       (if e
         (do
-          (log/errorf "Event error, request ID: %s, exception: %s"
-                      request-id e)
+          (log/errorf "Event error, request ID: %s" request-id)
+          (log/exception e)
           (api/invocation-error request-id e))
         (api/invocation-response request-id response)))))

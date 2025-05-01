@@ -6,8 +6,9 @@
    [clojure.string :as str]
    [jsam.core :as jsam]
    [lambda.codec :as codec]
-   [lambda.error :refer [error!
-                         with-safe]]))
+   [lambda.error :refer [throw!
+                         with-safe]]
+   [lambda.log :as log]))
 
 
 (defn process-headers
@@ -83,7 +84,7 @@
 
   Object
   (->body [this]
-    (error! "Cannot coerce %s to response body" this))
+    (throw! "Cannot coerce %s to response body" this))
 
   String
   (->body [this]
@@ -132,6 +133,28 @@
         (->ring)
         (handler)
         (ring->))))
+
+
+(def response-internal-error
+  {:status 500
+   :headers {"content-type" "text/plain"}
+   :body "Internal server error"})
+
+
+;; TODO: docstring
+(defn wrap-ring-exeption [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Throwable e
+        (let [{:keys [uri
+                      request-method]}
+              request]
+          (log/errorf "Unhandled exception in a Ring handler, method: %s, uri: %s"
+                      request-method uri)
+          (log/exception e)
+          response-internal-error)))))
+
 
 ;;
 ;; JSON middleware

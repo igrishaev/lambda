@@ -1,5 +1,6 @@
 (ns lambda.log
   (:require
+   [clojure.stacktrace :as st]
    [clojure.string :as str]))
 
 
@@ -20,3 +21,7 @@
 
 (defmacro errorf [template & args]
   `(logf :error ~template ~@args))
+
+(defmacro exception [e]
+  `(logf :error (with-out-str
+                  (st/print-stack-trace ~e))))

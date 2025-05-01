@@ -7,9 +7,13 @@
 
 ## 0.1.3-SNAPSHOT
 
-- ?
-- ?
-- ?
+- replace cheshire with jsam
+- remove ring-core
+- api: check for the error field, rethrow
+- api: set error type header
+- error ns: throw and rethrow
+- log ns: exception
+- ring wrap exception mw
 
 ## 0.1.2
 

@@ -1,16 +1,12 @@
 (ns lambda.error)
 
+(defmacro throw! [template & args]
+  `(throw (new RuntimeException (format ~template ~@args))))
 
-(defmacro error! [template & args]
-  `(throw (new Exception (format ~template ~@args))))
-
-
-(defn exit!
-  ([]
-   (exit! 0))
-  ([code]
-   (System/exit code)))
-
+(defmacro rethrow! [e template & args]
+  `(throw (new RuntimeException
+               (format ~template ~@args)
+               ~e)))
 
 (defmacro with-safe [& body]
   `(try
