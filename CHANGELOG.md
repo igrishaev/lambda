@@ -14,6 +14,7 @@
 - error ns: throw and rethrow
 - log ns: exception
 - ring wrap exception mw
+- update readme
 
 ## 0.1.2
 
