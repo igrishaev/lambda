@@ -21,7 +21,7 @@
   (-> handler
       (ring/wrap-json-body)
       (ring/wrap-json-response)
-      (ring/wrap-ring-exeption)
+      (ring/wrap-ring-exception)
       (ring/wrap-ring-event)))
 
 

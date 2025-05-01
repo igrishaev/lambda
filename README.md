@@ -189,24 +189,54 @@ megabytes so you can skip uploading it to S3 first.
 
 Test you Lambda in the console to ensure it works.
 
-## Ring Handler for HTTP Requests
+## Ring Support (Serving HTTP events)
 
-The framework can turn HTTP events into Ring maps. There is a middleware that
-transforms a your handler into a Ring handler. In the example below, pay
-attention to the `ring/wrap-ring-event` middleware on top of the stack. It's
-responsible for turning an event map into Ring and back. Right after
-`ring/wrap-ring-event`, feel free to add any Ring middleware for POST
-parameters, JSON, and so on.
+AWS Lambda can serve HTTP requests as events. Each HTTP request gets transformed
+into a special message which your lambda processes. It must return another
+message that forms an HTTP response.
 
-```clojure
-(ns demo.core
+[ring]: https://github.com/ring-clojure/ring
+
+This library brings a number of middleware that turn a lambda into
+[Ring-compatible][ring] HTTP server.
+
+There are the following middleware wrappers in the `lambda.ring` namespace:
+
+- `wrap-ring-event`: turns an incoming HTTP event into a Ring request map,
+  processes it and turns a Ring response map into an Lambda-compatible HTTP
+  message.
+
+- `wrap-ring-exception`: captures any uncaught exception happened while handling
+  an HTTP request. Log it and return an error response (500 Internal server
+  error).
+
+[ring-json]: https://github.com/ring-clojure/ring-json
+
+To not depend on [ring-json][ring-json] (which in turn depends on Cheshire), we
+provide our own tree middlware for incoming and outcoming JSON:
+
+- `wrap-json-body`: if the request was JSON, replace the `:body` field with
+  a parsed payload.
+
+- `wrap-json-params`: the same but puts the data into the `:json-params`
+  field. In addition, if the data was a map, merge it into the `:params` map.
+
+- `wrap-json-response`: if the body of the response was a collection, encode it
+  into a JSON string and add the Content-Type: application/json header.
+
+[jsam]: https://github.com/igrishaev/jsam
+
+These three middleware mimic their counterparts from Ring-json but rely on the
+JSam library to keep dependencies as narrow as possible.
+
+The following example shows how to build a stack of middleware properly:
+
+~~~clojure
+(ns some.demo
+  (:gen-class)
   (:require
-   [lambda.ring :as ring]
    [lambda.main :as main]
-   [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
-   [ring.middleware.keyword-params :refer [wrap-keyword-params]]
-   [ring.middleware.params :refer [wrap-params]])
-  (:gen-class))
+   [lambda.ring :as ring]))
 
 (defn handler [request]
   (let [{:keys [request-method
@@ -214,21 +244,26 @@ parameters, JSON, and so on.
                 headers
                 body]}
         request]
-
+    ;; you can branch depending on method and uri,
+    ;; or use compojure/reitit
     {:status 200
-     :body {:some {:data [1 2 3]}}}))
+     :headers {"foo" "bar"}
+     :body {:some "JSON date"}}))
 
 (def fn-event
   (-> handler
-      (wrap-keyword-params)
-      (wrap-params)
-      (wrap-json-body {:keywords? true})
-      (wrap-json-response)
+      (ring/wrap-json-body)
+      (ring/wrap-json-response)
+      (ring/wrap-ring-exception)
       (ring/wrap-ring-event)))
 
 (defn -main [& _]
   (main/run fn-event))
-```
+~~~
+
+For query- or form parameters, you can use classic `wrap-params`,
+`wrap-keyword-params`, and similar utilities from `ring.middleware.*`
+namespaces. For this, introduce the `ring-core` library into your project.
 
 ## Sharing the State Between Events
 

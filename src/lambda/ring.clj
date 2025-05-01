@@ -167,7 +167,7 @@
    :body "Internal server error"})
 
 
-(defn wrap-ring-exeption
+(defn wrap-ring-exception
   "
   A middleware what captures any Ring exceptions,
   logs them and returns a negative HTTP response.
