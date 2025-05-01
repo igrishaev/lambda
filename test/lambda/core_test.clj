@@ -1,20 +1,13 @@
 (ns lambda.core-test
   (:require
+   [clojure.java.io :as io]
+   [clojure.test :refer [deftest is]]
+   [jsam.core :as jsam]
    [lambda.ring :as ring]
-
-   [ring.middleware.json
-    :refer [wrap-json-body
-            wrap-json-response]]
-
    [ring.middleware.keyword-params
     :refer [wrap-keyword-params]]
-
    [ring.middleware.params
-    :refer [wrap-params]]
-
-   [cheshire.core :as json]
-   [clojure.java.io :as io]
-   [clojure.test :refer [deftest is]]))
+    :refer [wrap-params]]))
 
 
 (def capture! (atom nil))
@@ -40,8 +33,8 @@
   (-> handler
       (wrap-keyword-params)
       (wrap-params)
-      (wrap-json-body {:keywords? true})
-      (wrap-json-response)
+      (ring/wrap-json-body)
+      (ring/wrap-json-response)
       (ring/wrap-ring-event)))
 
 
@@ -49,15 +42,14 @@
 
   (let [event
         (-> "event.json"
-            io/resource
-            io/reader
-            (json/parse-stream keyword))
+            (io/resource)
+            (jsam/read))
 
         response
         (fn-event event)]
 
     (is (= {:statusCode 200,
-            :headers {"Content-Type" "application/json; charset=utf-8"},
+            :headers {"content-type" "application/json; charset=utf-8"},
             :isBase64Encoded false,
             :body "{\"aaa\":1}"}
            response))))
@@ -68,9 +60,8 @@
 
   (let [event
         (-> "event.json"
-            io/resource
-            io/reader
-            (json/parse-stream keyword))
+            (io/resource)
+            (jsam/read))
 
         response
         (fn-event event)
@@ -100,9 +91,8 @@
 
   (let [event
         (-> "event.json"
-            io/resource
-            io/reader
-            (json/parse-stream keyword)
+            (io/resource)
+            (jsam/read)
             (assoc-in [:headers "Content-Type"]
                       "application/x-www-form-urlencoded")
             (assoc-in [:body]

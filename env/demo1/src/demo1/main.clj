@@ -1,19 +1,12 @@
 (ns demo1.main
+  (:gen-class)
   (:require
-   [lambda.ring :as ring]
    [lambda.main :as main]
-
-   [ring.middleware.json
-    :refer [wrap-json-body
-            wrap-json-response]]
-
+   [lambda.ring :as ring]
    [ring.middleware.keyword-params
     :refer [wrap-keyword-params]]
-
    [ring.middleware.params
-    :refer [wrap-params]])
-
-  (:gen-class))
+    :refer [wrap-params]]))
 
 
 (defn handler [request]
@@ -32,8 +25,8 @@
   (-> handler
       (wrap-keyword-params)
       (wrap-params)
-      (wrap-json-body {:keywords? true})
-      (wrap-json-response)
+      (ring/wrap-json-body) ;; TODO params
+      (ring/wrap-json-response)
       (ring/wrap-ring-event)))
 
 

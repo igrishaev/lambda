@@ -133,18 +133,19 @@
         (handler)
         (ring->))))
 
+;;
 ;; JSON middleware
-;; TODO: remove ring json
+;;
 
 (defn json-request? [request]
   (when-let [content-type
              (get-in request [:headers "content-type"])]
-    (re-find #"^application/(.+\+)?json" content-type)))
+    (re-find #"^(?i)application/(.+\+)?json" content-type)))
 
 
 (def response-json-malformed
-  {:status  400
-   :headers {"Content-Type" "text/plain"}
+  {:status 400
+   :headers {"content-type" "text/plain"}
    :body "Malformed JSON payload"})
 
 
@@ -161,18 +162,39 @@
       (handler request))))
 
 
-;; TODO:
+(defn assoc-json-params [request json]
+  (if (map? json)
+    (-> request
+        (assoc :json-params json)
+        (update-in [:params] merge json))
+    request))
+
+
 (defn wrap-json-params [handler]
-  (fn []
-    )
-  )
+  (fn [request]
+    (if (json-request? request)
+      (let [[e data]
+            (with-safe
+              (some-> request :body jsam/read))]
+        (if e
+          response-json-malformed
+          (-> request
+              (assoc-json-params data)
+              (handler))))
+      (handler request))))
 
 
 ;; TODO: pass options
+
+(def CONTENT-TYPE-JSON
+  "application/json; charset=utf-8")
+
 (defn wrap-json-response
   [handler]
   (fn [request]
     (let [response (handler request)]
       (if (-> response :body coll?)
-        (update response :body jsam/write-string)
+        (-> response
+            (update :body jsam/write-string)
+            (assoc-in [:headers "content-type"] CONTENT-TYPE-JSON))
         response))))
