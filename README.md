@@ -14,8 +14,9 @@ A small framework to run AWS Lambdas compiled with Native Image.
     + [Linux (Local Build)](#linux-local-build)
     + [On MacOS (Docker)](#on-macos-docker)
   * [Create a Lambda in AWS](#create-a-lambda-in-aws)
+  * [Configuration](#configuration)
   * [Deploy and Test It](#deploy-and-test-it)
-- [Ring Handler for HTTP Requests](#ring-handler-for-http-requests)
+- [Ring Support (Serving HTTP events)](#ring-support-serving-http-events)
 - [Sharing the State Between Events](#sharing-the-state-between-events)
 
 <!-- tocstop -->
@@ -47,13 +48,13 @@ As the result, *this* framework:
 Leiningen/Boot
 
 ```
-[com.github.igrishaev/lambda "0.1.2"]
+[com.github.igrishaev/lambda "0.1.3"]
 ```
 
 Clojure CLI/deps.edn
 
 ```
-com.github.igrishaev/lambda {:mvn/version "0.1.2"}
+com.github.igrishaev/lambda {:mvn/version "0.1.3"}
 ```
 
 ## Writing Your Lambda
