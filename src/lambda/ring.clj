@@ -220,7 +220,7 @@
      (if (json-request? request)
        (let [[e request-json]
              (with-safe
-               (update request :body (jsam/read opt)))]
+               (update request :body jsam/read opt))]
          (if e
            response-json-malformed
            (handler request-json)))
@@ -280,6 +280,6 @@
      (let [response (handler request)]
        (if (-> response :body coll?)
          (-> response
-             (update :body (jsam/write-string opt))
+             (update :body jsam/write-string opt)
              (assoc-in [:headers "content-type"] CONTENT-TYPE-JSON))
          response)))))

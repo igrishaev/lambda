@@ -116,3 +116,4 @@
                      :headers {"content-type" "Application/Json"}})))))
 
 ;; TODO: exception
+;; TODO test JSON options
