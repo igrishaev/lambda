@@ -227,7 +227,8 @@ provide our own tree middlware for incoming and outcoming JSON:
 [jsam]: https://github.com/igrishaev/jsam
 
 These three middleware mimic their counterparts from Ring-json but rely on the
-JSam library to keep dependencies as narrow as possible.
+JSam library to keep dependencies as narrow as possible. Each middleware, in
+addition to a ring handler, accepts an optional map of JSON settings.
 
 The following example shows how to build a stack of middleware properly:
 
