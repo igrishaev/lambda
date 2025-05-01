@@ -1,6 +1,11 @@
 ;; https://github.com/ring-clojure/ring/blob/master/SPEC
 
 (ns lambda.ring
+  "
+  A namespace to mimic Ring functionality, namely:
+  - turn Lambda HTTP events into Ring maps and back;
+  - provide custom Ring middleware.
+  "
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -12,6 +17,9 @@
 
 
 (defn process-headers
+  "
+  Turn Lambda headers into a Ring headers map.
+  "
   [headers]
   (persistent!
    (reduce-kv
@@ -22,7 +30,11 @@
     headers)))
 
 
-(defn ->ring [event]
+(defn ->ring
+  "
+  Turn Lambda event into a Ring map.
+  "
+  [event]
 
   (let [{:keys [headers
                 isBase64Encoded
@@ -76,6 +88,9 @@
     (with-meta request {:event event})))
 
 
+;; A protocol to coerse various Ring responses
+;; to a Lambda response. Must return a couple of
+;; [should-be-base64-encoded?, string].
 (defprotocol IBody
   (->body [this]))
 
@@ -111,7 +126,11 @@
            codec/bytes->str)])))
 
 
-(defn ring-> [response]
+(defn ring->
+  "
+  Turn a Ring response map into a Lambda HTTP response.
+  "
+  [response]
 
   (let [{:keys [status
                 headers
@@ -127,7 +146,14 @@
      :body string}))
 
 
-(defn wrap-ring-event [handler]
+(defn wrap-ring-event
+  "
+  A ring middleware that transforms an HTTP Lambda
+  event into a Ring request, processes it with a
+  Ring handler, and turns the result into a Lambda
+  HTTP response.
+  "
+  [handler]
   (fn [event]
     (-> event
         (->ring)
@@ -141,8 +167,12 @@
    :body "Internal server error"})
 
 
-;; TODO: docstring
-(defn wrap-ring-exeption [handler]
+(defn wrap-ring-exeption
+  "
+  A middleware what captures any Ring exceptions,
+  logs them and returns a negative HTTP response.
+  "
+  [handler]
   (fn [request]
     (try
       (handler request)
@@ -160,7 +190,11 @@
 ;; JSON middleware
 ;;
 
-(defn json-request? [request]
+(defn json-request?
+  "
+  Check if the Ring request was of a JSON type.
+  "
+  [request]
   (when-let [content-type
              (get-in request [:headers "content-type"])]
     (re-find #"^(?i)application/(.+\+)?json" content-type)))
@@ -173,16 +207,24 @@
 
 
 (defn wrap-json-body
-  [handler]
-  (fn [request]
-    (if (json-request? request)
-      (let [[e request-json]
-            (with-safe
-              (update request :body jsam/read))]
-        (if e
-          response-json-malformed
-          (handler request-json)))
-      (handler request))))
+  "
+  A middleware that, if the request was JSON,
+  replaces the :body field with the parsed JSON
+  data. Takes an optional map of Jsam settings.
+  "
+  ([handler]
+   (wrap-json-body handler nil))
+
+  ([handler opt]
+   (fn [request]
+     (if (json-request? request)
+       (let [[e request-json]
+             (with-safe
+               (update request :body (jsam/read opt)))]
+         (if e
+           response-json-malformed
+           (handler request-json)))
+       (handler request)))))
 
 
 (defn assoc-json-params [request json]
@@ -193,31 +235,51 @@
     request))
 
 
-(defn wrap-json-params [handler]
-  (fn [request]
-    (if (json-request? request)
-      (let [[e data]
-            (with-safe
-              (some-> request :body jsam/read))]
-        (if e
-          response-json-malformed
-          (-> request
-              (assoc-json-params data)
-              (handler))))
-      (handler request))))
+(defn wrap-json-params
+  "
+  A middleware that, if the request was JSON,
+  adds the :json-params field to the request,
+  and also merged then with :params, if the
+  data was a map. Takes an optional map of
+  Jsam settings.
+  "
+  ([handler]
+   (wrap-json-params handler nil))
 
+  ([handler opt]
+   (fn [request]
+     (if (json-request? request)
+       (let [[e data]
+             (with-safe
+               (some-> request :body (jsam/read opt)))]
+         (if e
+           response-json-malformed
+           (-> request
+               (assoc-json-params data)
+               (handler))))
+       (handler request)))))
 
-;; TODO: pass options
 
 (def CONTENT-TYPE-JSON
   "application/json; charset=utf-8")
 
+
 (defn wrap-json-response
-  [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (if (-> response :body coll?)
-        (-> response
-            (update :body jsam/write-string)
-            (assoc-in [:headers "content-type"] CONTENT-TYPE-JSON))
-        response))))
+  "
+  A middleware that, if the body of the response
+  was a collection, transforms the body into
+  a JSON string and adds a Content-Type header
+  with JSON mime-type. Takes an optional map of
+  Jsam settings.
+  "
+  ([handler]
+   (wrap-json-response handler nil))
+
+  ([handler opt]
+   (fn [request]
+     (let [response (handler request)]
+       (if (-> response :body coll?)
+         (-> response
+             (update :body (jsam/write-string opt))
+             (assoc-in [:headers "content-type"] CONTENT-TYPE-JSON))
+         response)))))
