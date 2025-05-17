@@ -26,3 +26,8 @@
 #_:clj-kondo/ignore
 (defprop host
   (System/getenv "AWS_LAMBDA_RUNTIME_API"))
+
+
+#_:clj-kondo/ignore
+(defprop gzip?
+  (System/getenv "AWS_LAMBDA_USE_GZIP"))

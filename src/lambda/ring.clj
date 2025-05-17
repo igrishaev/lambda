@@ -11,9 +11,15 @@
    [clojure.string :as str]
    [jsam.core :as jsam]
    [lambda.codec :as codec]
+   [lambda.config :as config]
    [lambda.error :refer [throw!
                          with-safe]]
-   [lambda.log :as log]))
+   [lambda.log :as log])
+  (:import
+   (clojure.lang ISeq)
+   (java.io File
+            InputStream)
+   (java.util.zip GZIPInputStream)))
 
 
 (defn process-headers
@@ -88,14 +94,22 @@
     (with-meta request {:event event})))
 
 
+(def TYPE_ARR_BYTE
+  (Class/forName "[B"))
+
+
 ;; A protocol to coerse various Ring responses
 ;; to a Lambda response. Must return a couple of
-;; [should-be-base64-encoded?, string].
+;; [is-base64-encoded?, string].
 (defprotocol IBody
   (->body [this]))
 
 
 (extend-protocol IBody
+
+  nil
+  (->body [_]
+    [false ""])
 
   Object
   (->body [this]
@@ -105,25 +119,27 @@
   (->body [this]
     [false this])
 
-  clojure.lang.ISeq
+  ISeq
   (->body [this]
-    (->body (with-out-str
-              (doseq [line this]
-                (print line)))))
+    (->body (apply str this)))
 
-  java.io.File
+  File
   (->body [this]
     (->body (io/input-stream this)))
 
-  java.io.InputStream
+  InputStream
   (->body [this]
-    (let [array
-          (-> this
-              .readAllBytes)]
-      [true
-       (-> array
-           codec/b64-encode
-           codec/bytes->str)])))
+    (->body (codec/read-bytes this))))
+
+
+;; Arrays can be extended like this only
+(extend TYPE_ARR_BYTE
+  IBody
+  {:->body
+   (fn [this]
+     [true (-> this
+               codec/b64-encode
+               codec/bytes->str)])})
 
 
 (defn ring->
@@ -283,3 +299,127 @@
              (update :body jsam/write-string opt)
              (assoc-in [:headers "content-type"] CONTENT-TYPE-JSON))
          response)))))
+
+
+;;
+;; GZip middleware
+;;
+
+(defn accept-gzip? [request]
+  (or #_:clj-kondo/ignore (config/gzip?)
+      (some-> request
+              :headers
+              (get "accept-encoding")
+              (str/includes? "gzip"))))
+
+
+(defn encoded-gzip? [request]
+  (some-> request
+          :headers
+          (get "content-encoding")
+          (str/includes? "gzip")))
+
+
+(defprotocol IGzip
+  (-gzip-encode [this]))
+
+
+(extend-protocol IGzip
+
+  nil
+  (-gzip-encode [_]
+    nil)
+
+  Object
+  (-gzip-encode [this]
+    (throw! "Cannot gzip-encode body: %s" this))
+
+  String
+  (-gzip-encode [this]
+    (-> this
+        codec/str->bytes
+        codec/bytes->gzip))
+
+  ISeq
+  (-gzip-encode [this]
+    (-gzip-encode (apply str this)))
+
+  File
+  (-gzip-encode [this]
+    (-gzip-encode (io/input-stream this)))
+
+  InputStream
+  (-gzip-encode [this]
+    (-> this
+        codec/read-bytes
+        codec/bytes->gzip)))
+
+
+(extend TYPE_ARR_BYTE
+  IGzip
+  {:-gzip-encode
+   (fn [this]
+     (codec/bytes->gzip this))})
+
+
+(defn gzip-response
+  "
+  Gzip-encode a Ring response in two steps:
+  - assoc a header;
+  - encode the body payload.
+  "
+  [response]
+  (-> response
+      (assoc-in [:headers "content-encoding"] "gzip")
+      (update :body -gzip-encode)))
+
+
+(defn ungzip-request
+  "
+  Wrap the request's :body field with a class
+  that decodes gzip payload on the fly.
+  "
+  [request]
+  (update request
+          :body
+          (fn [input-stream]
+            (new GZIPInputStream input-stream))))
+
+
+(defn wrap-gzip
+  "
+  Wrap a given handler with in/out gzip logic.
+
+  If a client sends a header Content-Encoding: gzip,
+  then the :body of the request is wrapped into an
+  instance of GzipInputStream.
+
+  If a client sends a header Accept-Encoding: gzip,
+  then the :body of the response is encoded into
+  a Gzipped byte array. In addition, the response
+  gets a header Content-Encoding: gzip. Supported
+  body types are: nil, String, native byte-array,
+  ISeq(of String), and InputStream.
+
+  Gzip output encoding might be forced with a global
+  configuration (see the lambda.config namespace).
+  "
+  [handler]
+  (fn [request]
+
+    (let [encoded?
+          (encoded-gzip? request)
+
+          accept?
+          (accept-gzip? request)]
+
+      (cond-> request
+
+        encoded?
+        (ungzip-request)
+
+        :then
+        (handler)
+
+        accept?
+        (gzip-response)))))

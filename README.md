@@ -267,6 +267,49 @@ For query- or form parameters, you can use classic `wrap-params`,
 `wrap-keyword-params`, and similar utilities from `ring.middleware.*`
 namespaces. For this, introduce the `ring-core` library into your project.
 
+## Gzip Support
+
+The library provides a special Ring middlware to handle gzip logic. Apply it as
+follows:
+
+~~~clojure
+(def fn-event
+  (-> handler
+      (ring/wrap-json-body)
+      (ring/wrap-json-response)
+      (ring/wrap-gzip) ;; -- this
+      (ring/wrap-ring-exception)
+      (ring/wrap-ring-event)))
+~~~
+
+The middleware acts as follows under the hood:
+
+- if a client sends a gzipped payload and the `Content-Encoding` header is
+  `gzip`, the request's `:body` field gets wrapped with the `GzipInputStream`
+  instance. By reading from it, you'll get the origin payload. Useful when
+  sending submitting JSON values to a Lambda function though HTTP.
+
+- If a client sends a header `Accept-Encoding` with `gzip` inside, the body of a
+  response gets gzipped, and the `Content-Encoding: gzip` header is set. Again,
+  greatly it saves the traffic. In addition, remember about a limitation in AWS:
+  a response cannot exceed 6Mbs. Gzipping a response helps bypass this limit.
+
+- Finally, if there is a non-empty env var `AWS_LAMBDA_USE_GZIP`, the response
+  is always gzipped no matter what client specifies in the `Accept-Encoding`
+  header.
+
+Although enabling gzip looks trivial, missing it might lead to very strange
+things. Personally I spent several days trying to investigate an issue when AWS
+says "the content is too large". Turned out, the culprit was a **double JSON
+encoding**. When you return JSON from Ring, you encoding it once. But then
+Lambda runtime sends this message to AWS, it gets JSON-encoded a second
+time. This, in turn, adds extra slashes to quote special symbols in JSON. For
+details, see these pages:
+
+- [A StackOverflow question with my answer](https://stackoverflow.com/questions/66971400/aws-lambda-body-size-is-too-large-error-but-body-size-is-under-limit)
+- [A question on AWS:repost with no answer](https://repost.aws/questions/QU57r4NMQIQROXqW4Vl6YDBQ)
+- [My blog post (in Russian, use Google Translate)](https://grishaev.me/aws-1/)
+
 ## Sharing the State Between Events
 
 In AWS, a Lambda can process several events if they happen in series. Thus, it's
@@ -309,3 +352,9 @@ holds a persistent connection to a database. Under the hood, it calls the
 stays persistent and won't be created from scratch every time you process an
 event. This, of course, applies only to a case when you have multiple events
 served in series.
+
+~~~
+©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©
+Ivan Grishaev, 2025. © UNLICENSE ©
+©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©
+~~~
