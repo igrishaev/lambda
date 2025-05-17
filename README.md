@@ -178,10 +178,11 @@ project on Mac M1, I choose arm64.
 
 There are some options you can override with environment variables, namely:
 
-| Var                      | Default          | Comment                                       |
-|--------------------------|------------------|-----------------------------------------------|
-| `LAMBDA_RUNTIME_TIMEOUT` | 900000 (15 mins) | How long to wait when polling for a new event |
-| `LAMBDA_RUNTIME_VERSION` | 2018-06-01       | Which Runtime API version to use              |
+| Var                      | Default          | Comment                                         |
+|--------------------------|------------------|-------------------------------------------------|
+| `LAMBDA_RUNTIME_TIMEOUT` | 900000 (15 mins) | How long to wait when polling for a new event   |
+| `LAMBDA_RUNTIME_VERSION` | 2018-06-01       | Which Runtime API version to use                |
+| `AWS_LAMBDA_USE_GZIP`    | nil              | Forcibly gzip-encode Ring responses (see below) |
 
 ### Deploy and Test It
 
