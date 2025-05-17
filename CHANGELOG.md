@@ -6,11 +6,9 @@
 - ?
 
 
-## 0.1.4-SNAPSHOT
+## 0.1.4
 
-- ?
-- ?
-- ?
+- gzip support (tests & readme)
 
 ## 0.1.3
 
