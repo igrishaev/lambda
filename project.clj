@@ -29,7 +29,8 @@
   [[org.clojure/clojure "1.11.1"]
    [http-kit "2.6.0"]
    [com.github.igrishaev/jsam "0.1.0"]
-   [ring/ring-core "1.9.6"]]
+   [ring/ring-core "1.9.6"]
+   [com.stuartsierra/component "1.1.0"]]
 
   :dependencies
   [[org.clojure/clojure :scope "provided"]
@@ -47,8 +48,15 @@
    {:main demo1.main
     :source-paths ["env/demo1/src"]}
 
+   :demo3
+   {:main demo3.main
+    :source-paths ["env/demo3/src"]
+    :dependencies [[com.stuartsierra/component]]
+    :resource-paths ["env/dev/resources"]}
+
    :dev
-   {:dependencies [[ring/ring-core]]
+   {:dependencies [[ring/ring-core]
+                   [com.stuartsierra/component]]
     :resource-paths ["env/dev/resources"]}
 
    :uberjar

@@ -8,24 +8,38 @@
    [lambda.api :as api]
    [lambda.error :as e]))
 
+(set! *warn-on-reflection* true)
+
+
+(defn step [fn-event]
+  (let [{:keys [headers body]}
+        (api/next-invocation)
+
+        request-id
+        (get headers :lambda-runtime-aws-request-id)
+
+        [e response]
+        (e/with-safe
+          (fn-event body))]
+
+    (if e
+      (do
+        (log/errorf "Event error, request ID: %s" request-id)
+        (log/exception e)
+        (api/invocation-error request-id e))
+      (api/invocation-response request-id response))))
+
 
 (defn run [fn-event]
-
   (while true
+    (step fn-event)))
 
-    (let [{:keys [headers body]}
-          (api/next-invocation)
 
-          request-id
-          (get headers :lambda-runtime-aws-request-id)
-
-          [e response]
-          (e/with-safe
-            (fn-event body))]
-
-      (if e
-        (do
-          (log/errorf "Event error, request ID: %s" request-id)
-          (log/exception e)
-          (api/invocation-error request-id e))
-        (api/invocation-response request-id response)))))
+(defn run-thread ^Thread [fn-event]
+  (let [thread
+        (new Thread
+             (fn []
+               (while (not (Thread/interrupted))
+                 (step fn-event))))]
+    (.start thread)
+    thread))

@@ -37,7 +37,7 @@ build-binary-docker: ${JAR}
 build-binary-local: ${JAR} graal-build
 
 uberjar:
-	lein with-profile +demo1 uberjar
+	lein with-profile +demo3 uberjar
 
 bootstrap-zip:
 	zip -j bootstrap.zip bootstrap
