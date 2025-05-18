@@ -17,8 +17,9 @@ A small framework to run AWS Lambdas compiled with Native Image.
   * [Configuration](#configuration)
   * [Deploy and Test It](#deploy-and-test-it)
 - [Ring Support (Serving HTTP events)](#ring-support-serving-http-events)
-- [Gzip Support](#gzip-support)
+- [Gzip Support for Ring](#gzip-support-for-ring)
 - [Sharing the State Between Events](#sharing-the-state-between-events)
+- [Component Support](#component-support)
 
 <!-- tocstop -->
 

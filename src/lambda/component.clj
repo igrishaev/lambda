@@ -13,12 +13,11 @@
 (set! *warn-on-reflection* true)
 
 
-(defrecord LambdaHandler
-    [;; deps
-     ^IFn handler
+(defrecord LambdaHandler [;; deps
+                          ^IFn handler
 
-     ;; runtime
-     ^Thread -thread])
+                          ;; runtime
+                          ^Thread -thread])
 
 
 (defn with-component-meta
