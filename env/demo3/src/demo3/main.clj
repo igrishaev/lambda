@@ -24,14 +24,6 @@
         @-state))))
 
 
-(deftype Counter []
-  component/Lifecycle
-  (start [this]
-    (new-counter))
-  (stop [this]
-    this))
-
-
 (defn handler-index [request counter]
   {:status 200
    :body {:stats (-stats counter)}})
@@ -81,7 +73,7 @@
   (component/system-map
 
    :counter
-   (new Counter)
+   (new-counter)
 
    :handler
    (-> {}

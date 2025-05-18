@@ -30,12 +30,22 @@
       (api/invocation-response request-id response))))
 
 
-(defn run [fn-event]
+(defn run
+  "
+  Run an endless event loop in the current thread.
+  "
+  [fn-event]
   (while true
     (step fn-event)))
 
 
-(defn run-thread ^Thread [fn-event]
+(defn run-thread
+  "
+  Run an endless event loop in a new thread. Returns
+  a Thread instance. To stop the loop, interrupt the
+  thread and then join it.
+  "
+  ^Thread [fn-event]
   (let [thread
         (new Thread
              (fn []

@@ -315,7 +315,7 @@ slashes and blows up payload by 15-20%. For details, see these pages:
 
 In AWS, a Lambda can process several events if they happen in series. Thus, it's
 useful to preserve the state between the handler calls. A state can be a config
-map read from a resource or an open connection to some resource.
+map read from a resource or an open TCP connection.
 
 An easy way to share the state is to close your handler function over some
 variables. In this case, the handler is not a plain function but a function that
@@ -353,6 +353,18 @@ holds a persistent connection to a database. Under the hood, it calls the
 stays persistent and won't be created from scratch every time you process an
 event. This, of course, applies only to a case when you have multiple events
 served in series.
+
+Another way to preserve state across multiple Lambda invocations is to use
+frameworks like Component, Integrant, or Mount. These libraries bootstrap global
+entities once at the beginning. For example, a database connection pool is
+created once and then shared with a message handler.
+
+The section below describes how to use the Component framework with the Lambda
+library.
+
+## Component Support
+
+TODO
 
 ~~~
 ©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©

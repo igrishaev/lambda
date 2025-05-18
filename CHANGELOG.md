@@ -1,10 +1,32 @@
+## 0.1.9-SNAPSHOT
+
+- ?
+- ?
+- ?
+
+## 0.1.8-SNAPSHOT
+
+- ?
+- ?
+- ?
+
+## 0.1.7-SNAPSHOT
+
+- ?
+- ?
+- ?
+
+## 0.1.6-SNAPSHOT
+
+- ?
+- ?
+- ?
 
 ## 0.1.5-SNAPSHOT
 
+- component support
+- demo3 added with component
 - ?
-- ?
-- ?
-
 
 ## 0.1.4
 
