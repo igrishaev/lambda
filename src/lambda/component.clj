@@ -13,11 +13,35 @@
 (set! *warn-on-reflection* true)
 
 
-(defrecord LambdaHandler [;; deps
+(defprotocol Lifecycle
+  (start [this])
+  (stop [this]))
+
+
+(defrecord LambdaHandler [ ;; deps
                           ^IFn handler
 
                           ;; runtime
-                          ^Thread -thread])
+                          ^Thread -thread]
+
+  Lifecycle
+
+  (start [this]
+    (if -thread
+      this
+      (let [-thread (main/run-thread handler)]
+        (log/infof "lambda handler thread started")
+        (assoc this :-thread -thread))))
+
+  (stop [this]
+    (if -thread
+      (do
+        (.interrupt -thread)
+        (log/infof "lambda handler thread interrupted")
+        (.join -thread)
+        (log/infof "lambda handler thread joined")
+        (assoc this :-thread nil))
+      this)))
 
 
 (defn with-component-meta
@@ -26,24 +50,8 @@
   "
   [component]
   (with-meta component
-    {'com.stuartsierra.component/start
-     (fn [{:as this :keys [-thread handler]}]
-       (if -thread
-         this
-         (let [-thread (main/run-thread handler)]
-           (log/infof "lambda handler thread started")
-           (assoc this :-thread -thread))))
-
-     'com.stuartsierra.component/stop
-     (fn [{:as this :keys [^Thread -thread]}]
-       (if -thread
-         (do
-           (.interrupt -thread)
-           (log/infof "lambda handler thread interrupted")
-           (.join -thread)
-           (log/infof "lambda handler thread joined")
-           (assoc this :-thread nil))
-         this))}))
+    {'com.stuartsierra.component/start start
+     'com.stuartsierra.component/stop stop}))
 
 
 (defn lambda
