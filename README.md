@@ -20,6 +20,7 @@ A small framework to run AWS Lambdas compiled with Native Image.
 - [Gzip Support for Ring](#gzip-support-for-ring)
 - [Sharing the State Between Events](#sharing-the-state-between-events)
 - [Component Support](#component-support)
+- [Misc](#misc)
 
 <!-- tocstop -->
 
@@ -365,17 +366,17 @@ library.
 
 ## Component Support
 
-The `lambda.component` namespace ships a function called `lambda` that creates a
+The `lambda.component` namespace ships a function called `lambda` to spawn a
 component (in terms of Stuart Sierra's Component library). When started, it runs
-a separate thread that reads messages from Lambda runtime, processes them and
+a separate thread that consumes messages from Lambda runtime, processes them and
 submits positive or negative acknowledge. On every iteration, the logic checks
 if a thread was interrupted. When it was, the endless cycle exits. Stopping a
-component means interrupting the thread and joining it (will be blocked until the
-current message gets processed).
+component means interrupting the thread and joining it (will be blocked until
+the current message gets processed).
 
 The component depends on a `:handler` slot which should be a function (or an
-object that implements a 1-arity `invoke` method from `clojure.lang.IFn`). You
-can pass this handler using constructor as well:
+object that implements 1-arity `invoke` method from `clojure.lang.IFn`). You can
+pass this handler using constructor as well:
 
 ~~~clojure
 (ns some.namespace
@@ -440,8 +441,7 @@ The namespace produces a dedicated class (see the `(:gen-class)` form). The
 runtime rather than be a top-level `def` definition because `native-image`
 freezes the world, and you'll get weird behavior.
 
-The `:lambda` component depends on a `:handler` component. Here is a handler
-definition:
+The `:lambda` component depends on a `:handler` component. Here is a definition:
 
 ~~~clojure
 (defrecord RingHandler [counter]
@@ -477,7 +477,7 @@ on the `counter` component, which has not been initialized yet. The
 ~~~
 
 The `counter` component is simple: it's an atom closed over a bunch of methods
-to count how many times a certain page was
+to count how many times a certain page was seen:
 
 ~~~clojure
 (defprotocol ICounter
@@ -535,6 +535,8 @@ Mount is even easier:
   :start (lc/start (lc/lambda handler))
   :stop (lc/stop lambda))
 ~~~
+
+## Misc
 
 ~~~
 ©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©©
