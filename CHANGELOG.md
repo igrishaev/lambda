@@ -22,11 +22,10 @@
 - ?
 - ?
 
-## 0.1.5-SNAPSHOT
+## 0.1.5
 
 - component support
 - demo3 added with component
-- ?
 
 ## 0.1.4
 
