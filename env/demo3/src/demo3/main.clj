@@ -69,6 +69,11 @@
         (ring/wrap-ring-event))))
 
 
+;;
+;; Must be a function but not a top-level static variable.
+;; Otherwise, you'll get weird behaviour with native-image.
+;;
+
 (defn make-system []
   (component/system-map
 

@@ -4,7 +4,8 @@
   a component that processes Lambda messages in a separate thread.
   "
   (:import
-   (clojure.lang IFn))
+   (clojure.lang IFn)
+   (java.io Writer))
   (:require
    [lambda.log :as log]
    [lambda.main :as main]))
@@ -13,12 +14,16 @@
 (set! *warn-on-reflection* true)
 
 
+;;
+;; Here and below: we mimic the Component protocol and extend
+;; the component via metadata to avoid Component dependency.
+;;
 (defprotocol Lifecycle
   (start [this])
   (stop [this]))
 
 
-(defrecord LambdaHandler [ ;; deps
+(defrecord LambdaHandler [;; deps
                           ^IFn handler
 
                           ;; runtime
@@ -41,7 +46,18 @@
         (.join -thread)
         (log/infof "lambda handler thread joined")
         (assoc this :-thread nil))
-      this)))
+      this))
+
+  Object
+
+  (toString [_]
+    (format "<LambdaHandler, handler: %s, thread: %s>"
+            (pr-str handler) -thread)))
+
+
+(defmethod print-method LambdaHandler
+  [x ^Writer w]
+  (.write w (str x)))
 
 
 (defn with-component-meta
