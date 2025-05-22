@@ -1,4 +1,4 @@
-(defproject com.github.igrishaev/lambda "0.1.6"
+(defproject com.github.igrishaev/lambda "0.1.7-SNAPSHOT"
 
   :description
   "AWS Lambda as single binary file"
