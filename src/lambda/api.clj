@@ -45,10 +45,11 @@
      (try
        (http/request request)
        (catch Exception e
-         (let [data (ex-data e)
-               message (ex-message e)]
-           (e/throw! "Failed to interact with the Runtime API, method: %s, url: %s, message: %s, ex-data: %s"
-             method url message data)))))))
+         (e/throw! "Failed to interact with the Runtime API, method: %s, url: %s, status: %s, message: %s"
+                   method
+                   url
+                   (some-> e ex-data :status)
+                   (ex-message e)))))))
 
 
 (defn next-invocation []
