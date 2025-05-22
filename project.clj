@@ -27,14 +27,14 @@
 
   :managed-dependencies
   [[org.clojure/clojure "1.11.1"]
-   [http-kit "2.6.0"]
+   [org.babashka/http-client "0.4.22"]
    [com.github.igrishaev/jsam "0.1.0"]
    [ring/ring-core "1.9.6"]
    [com.stuartsierra/component "1.1.0"]]
 
   :dependencies
   [[org.clojure/clojure :scope "provided"]
-   [http-kit]
+   [org.babashka/http-client]
    [com.github.igrishaev/jsam]]
 
   :target-path

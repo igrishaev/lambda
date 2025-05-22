@@ -2,11 +2,11 @@
 
 (ns lambda.api
   (:require
+   [babashka.http-client :as http]
    [clojure.string :as str]
    [jsam.core :as jsam]
    [lambda.config :as config]
-   [lambda.error :as e]
-   [org.httpkit.client :as client]))
+   [lambda.error :as e]))
 
 (defn parse-response [response]
   (update response
@@ -33,31 +33,22 @@
                  #_:clj-kondo/ignore (config/version)
                  path)
 
-         params
-         {:as :stream
-          :url url
-          :headers headers
+         request
+         {:url url
           :method method
+          :headers headers
+          :as :stream
           :timeout #_:clj-kondo/ignore (config/timeout)
           :body (when data
-                  (jsam/write-string data))}
+                  (jsam/write-string data))}]
 
-         {:as response
-          :keys [status body error]}
-         @(client/request params parse-response)]
-
-     (when error
-       (e/rethrow! error "lambda runtime error, method: %s, url: %s"
-                   method url))
-
-     (case (long status)
-
-       (200 201 202)
-       response
-
-       ;; else
-       (e/throw! "Negative response from the Runtime API, method: %s, url: %s, status: %s, body: %s"
-                 method url status body)))))
+     (try
+       (http/request request)
+       (catch Exception e
+         (let [data (ex-data e)
+               message (ex-message e)]
+           (e/throw! "Failed to interact with the Runtime API, method: %s, url: %s, message: %s, ex-data: %s"
+             method url message data)))))))
 
 
 (defn next-invocation []

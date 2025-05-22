@@ -38,12 +38,13 @@ Well, because none of the existing libraries covers my requirements, namely:
 
 As the result, *this* framework:
 
-- Depends only on Http Kit and Cheshire to interact with AWS;
+- Narrow dependencies to keep the output file as thin as possible;
 - Provides an endless loop that consumes events from AWS and handles them. You
   only submit a function that processes an event.
 - Provides a Ring middleware that turns HTTP events into a Ring handler. Thus,
   you can easily serve HTTP requests with Ring stack.
 - Has a built-in logging facility.
+- Stuart Sierra's Component library support.
 - Provides a bunch of Make commands to build a zipped bootstrap file.
 
 ## Installation
