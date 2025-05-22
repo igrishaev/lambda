@@ -27,14 +27,14 @@
    (let [host
          #_:clj-kondo/ignore (config/host)
 
-         url
+         uri
          (format "http://%s/%s%s"
                  host
                  #_:clj-kondo/ignore (config/version)
                  path)
 
          request
-         {:url url
+         {:uri uri
           :method method
           :headers headers
           :as :stream
@@ -43,11 +43,13 @@
                   (jsam/write-string data))}]
 
      (try
-       (http/request request)
+       (-> request
+           (http/request)
+           (parse-response))
        (catch Exception e
          (e/throw! "Failed to interact with the Runtime API, method: %s, url: %s, status: %s, message: %s"
                    method
-                   url
+                   uri
                    (some-> e ex-data :status)
                    (ex-message e)))))))
 

@@ -16,7 +16,7 @@
         (api/next-invocation)
 
         request-id
-        (get headers :lambda-runtime-aws-request-id)
+        (get headers "lambda-runtime-aws-request-id")
 
         [e response]
         (e/with-safe
