@@ -18,9 +18,9 @@
 
 ## 0.1.6-SNAPSHOT
 
-- ?
-- ?
-- ?
+- switch from http-kit to babashka-http
+- update demo3
+- public test lambda
 
 ## 0.1.5
 

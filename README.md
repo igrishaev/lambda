@@ -20,6 +20,7 @@ A small framework to run AWS Lambdas compiled with Native Image.
 - [Gzip Support for Ring](#gzip-support-for-ring)
 - [Sharing the State Between Events](#sharing-the-state-between-events)
 - [Component Support](#component-support)
+- [Demo](#demo)
 - [Misc](#misc)
 
 <!-- tocstop -->
@@ -536,6 +537,14 @@ Mount is even easier:
   :start (lc/start (lc/lambda handler))
   :stop (lc/stop lambda))
 ~~~
+
+## Demo
+
+[test-lambda]: https://kpryignyuxqx3wwuss7oqvox7q0yhili.lambda-url.us-east-1.on.aws/
+
+There is a [public Lambda function][test-lambda] available for tests and
+benchmarks. The index page (`GET /`) holds instructions about what you can do
+with it.
 
 ## Misc
 
