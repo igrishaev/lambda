@@ -16,7 +16,7 @@
 - ?
 - ?
 
-## 0.1.6-SNAPSHOT
+## 0.1.6
 
 - switch from http-kit to babashka-http
 - update demo3
